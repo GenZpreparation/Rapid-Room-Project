@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} - Room Details</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        /* Navbar from dashboard */
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+        .container {
+            max-width: 1100px; /* Wider container for two columns */
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* 2/3 for images, 1/3 for info */
+            gap: 2rem;
+        }
+        .image-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .main-image img {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            background-color: #eef2ff;
+        }
+        .thumbnail-strip {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+        }
+        .thumbnail-strip img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .thumbnail-strip img:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .thumbnail-strip img.active {
+            opacity: 1;
+            border-color: var(--accent);
+        }
+        .info-card h1 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+        }
+        .info-card .location-text {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .status-badge.available { background-color: #d1e7dd; color: #0f5132; }
+        .status-badge.rented { background-color: #f8d7da; color: #842029; }
+        .key-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .detail-item { display: flex; align-items: center; gap: 0.75rem; }
+        .detail-item svg { width: 20px; height: 20px; color: var(--muted); }
+        .detail-item span { font-weight: 500; }
+        .rent-contact-section {
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .rent-contact-section .rent {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0 0 0.5rem 0;
+        }
+        .rent-contact-section .contact {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem 0;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        .description { line-height: 1.7; color: var(--muted); }
+        .amenities-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .amenities-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        /* Generic button style for 'Book Now' */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+        /* Styles for owner action buttons, adapted from dashboard */
+        .owner-actions {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .owner-actions .action-buttons {
+            display: grid; /* Use grid for perfect equal columns */
+            grid-template-columns: 1fr 1fr 1fr; /* Create three equal-width columns */
+            gap: 0.75rem; /* Space between buttons */
+        }
+
+        .action-buttons .btn, .action-buttons button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        /* Styles for owner action buttons, adapted from dashboard */
+        .btn.edit { background-color: #6b7280; color: #fff; }
+        .btn.edit:hover { background-color: #4b5563; border-color: #4b5563; }
+        .btn.available { background-color: #f97316; color: #fff; }
+        .btn.rented { background-color: #22c55e; color: #fff; }
+        .btn.delete { background-color: #ef4444; color: #fff; }
+        .student-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .action-buttons svg { width: 16px; height: 16px; }
+        .btn.delete:hover { background-color: #dc2626; }
+        .amenities-list li svg { width: 18px; height: 18px; color: var(--accent); }
+
+        @media (max-width: 900px) {
+            .detail-grid { grid-template-columns: 1fr; }
+            .info-card { margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <div class="user-menu">
+            <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="detail-grid">
+            <div class="image-gallery">
+                <div class="main-image">
+                    <img id="main-img" src="{{ post.images.first.image.url }}" alt="{{ post.title }}">
+                </div>
+                <div class="thumbnail-strip">
+                    {% for image in post.images.all %}
+                        <img src="{{ image.image.url }}" alt="Thumbnail" class="thumbnail {% if forloop.first %}active{% endif %}" onclick="changeImage('{{ image.image.url }}', this)">
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h1>{{ post.title }}</h1>
+                {% if post.is_available %}
+                    <div class="status-badge available">Available</div>
+                {% else %}
+                    <div class="status-badge rented">Rented</div>
+                {% endif %}
+
+                <div class="key-details">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ full_address|urlencode }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+                        <div class="detail-item">
+                            <!-- Replaced with a different solid-style location icon for better aesthetics -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--text-primary)">
+                                <path fill-rule="evenodd" d="M11.54 22.351l.07.049a.75.75 0 00.84 0l.07-.049C16.745 20.36 22.5 17.861 22.5 12.75a10.5 10.5 0 10-21 0c0 5.111 5.755 7.612 10.46 9.601zm-.84-1.112C7.733 19.046 4.5 16.113 4.5 12.75a9 9 0 1118 0c0 3.363-3.233 6.296-6.2 8.489a1.5 1.5 0 00-1.679 0z" clip-rule="evenodd" />
+                                <path fill-rule="evenodd" d="M12 13.5a3 3 0 100-6 3 3 0 000 6zm0 1.5a4.5 4.5 0 100-9 4.5 4.5 0 000 9z" clip-rule="evenodd" />
+                            </svg>
+                            <span>{{ post.street_address }}, {{ post.city }}</span>
+                        </div>
+                    </a>
+                    <div class="detail-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        <span>{{ post.get_room_type_display }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                        <span>{{ post.area }} sq. ft.</span>
+                    </div>
+                    <div class="detail-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span>{{ post.available_from|date:"F j, Y" }}</span>
+                    </div>
+                </div>
+            <div class="owner-info" style="margin-top: 1.5rem;">
+                <p style="margin: 0; color: var(--muted);">Listed by: 
+                    <a href="{% url 'public_profile' post.author.id %}" style="font-weight: 600; color: var(--text-primary); text-decoration: none;">{{ post.author.name }}</a>
+                </p>
+            </div>
+
+                <div class="rent-contact-section">
+                    <div class="rent">₹ {{ post.rent|floatformat:0 }} / month</div>
+                    {% if user_role != 'student' or is_owner %}
+                        <div class="contact">Contact: {{ post.contact_number }}</div>
+                    {% endif %}
+                </div>
+
+                {% if user_role == 'student' and post.is_available and not is_owner %}
+                    <div class="student-actions">
+                        {% if has_booked %}
+                            <a href="{% url 'student_bookings' %}" class="btn" style="background-color: var(--muted); grid-column: 1 / -1;">Request Sent (View Status)</a>
+                        {% else %}
+                            <a href="{% url 'create_booking' post.id %}" class="btn">Book Now</a>
+                            <a href="{% url 'start_conversation' post.id %}" class="btn" style="background-color: #4b5563;">Message Owner</a>
+                        {% endif %}
+                    </div>
+                {% elif user_role == 'student' and not is_owner %}
+                    <!-- If the room is rented, just show the message button -->
+                    <a href="{% url 'start_conversation' post.id %}" class="btn" style="background-color: #4b5563;">Message Owner</a>
+                {% endif %}
+
+                <h2 class="section-title">Description</h2>
+                <p class="description">{{ post.description }}</p>
+
+                <h2 class="section-title">Amenities</h2>
+                <ul class="amenities-list">
+                    {% for amenity in amenities_list %}
+                        <li><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> {{ amenity|capfirst }}</li>
+                    {% endfor %}
+                </ul>
+
+                {% if is_owner %}
+                <div class="owner-actions">
+                    <div class="action-buttons" style="margin-top: 1rem;">
+                        <a href="{% url 'edit_post' post.id %}" class="btn edit" title="Edit Listing">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 7.5z"></path></svg> Edit
+                        </a>
+                        <a href="{% url 'owner_booking_requests' %}" class="btn available" title="Check Bookings">Bookings</a>
+                        <a href="#" onclick="document.getElementById('delete-form').submit(); return false;" class="btn delete" title="Delete Listing">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Delete
+                        </a>
+                    </div>
+                    <form id="delete-form" method="post" action="{% url 'delete_post' post.id %}" onsubmit="return confirm('Are you sure you want to delete this post? This cannot be undone.');" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    <script>
+        function changeImage(imageUrl, thumbElement) {
+            // Set the main image source
+            document.getElementById('main-img').src = imageUrl;
+
+            // Update the active state for thumbnails
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+            thumbElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

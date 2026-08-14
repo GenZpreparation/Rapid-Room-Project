@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Messages</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden; /* Prevent body scroll */
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0; /* Prevent navbar from shrinking */
+        }
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+        .notifications {
+            position: relative;
+            margin-left: 1.5rem;
+        }
+        .notification-bell {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            position: relative;
+            padding: 0.5rem;
+        }
+        .notification-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 0.5rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 320px;
+            z-index: 10;
+            padding: 0.5rem 0;
+        }
+        .notification-dropdown-header {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 0.5rem;
+        }
+        .notification-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        .notification-item:hover {
+            background-color: #f9fafb;
+        }
+        .notification-item .participant-name {
+            font-weight: 600;
+        }
+        .notification-item .post-title {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .container {
+            max-width: 900px; /* Or your preferred width */
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 65px); /* Full height minus navbar */
+            box-sizing: border-box;
+        }
+        .header {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            margin-bottom: 1rem;
+        }
+        .header .search-bar {
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+            width: 250px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .header .search-bar:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        .conversation-list {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow-y: auto; /* Make the list scrollable */
+            flex-grow: 1; /* Allow it to take available space */
+        }
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-decoration: none;
+            color: inherit;
+            transition: background-color 0.2s ease;
+        }
+        .conversation-item:last-child { border-bottom: none; } 
+        .conversation-item:hover { background-color: #f9fafb; }
+        .conversation-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .conversation-info { flex-grow: 1; }
+        .conversation-info .participants { font-weight: 700; }
+        .conversation-info .post-title { font-size: 0.9rem; color: var(--muted); margin: 4px 0; }
+        .conversation-info .last-message {
+            font-size: 0.9rem;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 400px;
+        }
+        .conversation-item .unread-dot {
+            background-color: var(--accent);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            opacity: 0;
+        }
+        .conversation-item.unread .unread-dot {
+            opacity: 1;
+        }
+        .conversation-meta .date { font-size: 0.85rem; color: var(--muted); }
+        .conversation-item.unread .participants,
+        .conversation-item.unread .last-message {
+            font-weight: 700; 
+            color: var(--text-primary);
+        }
+        .conversation-item.unread {
+            background-color: #f0f3ff; /* Subtle blue highlight for unread */
+        }
+        .no-conversations { 
+            text-align: center; 
+            padding: 3rem; 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <div class="user-menu">
+            <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+            <div class="notifications">
+                <button class="notification-bell" id="notificationBell">
+                    <!-- Bell Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span class="notification-count" id="notificationCount" style="display: none;">0</span>
+                </button>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <!-- Notifications will be loaded here by JavaScript -->
+                </div>
+            </div>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Inbox</h1>
+            <input type="text" id="conversationSearch" class="search-bar" placeholder="Search by name or post...">
+        </div>
+
+        <div class="conversation-list">
+            {% for conv in conversations %}
+                <a href="{% url 'conversation_detail' conv.id %}" class="conversation-item {% if conv.has_unread %}unread{% endif %}">
+                    <div class="unread-dot"></div>
+                    <img src="{{ conv.other_participant.profile_photo.url|default:'/static/default_avatar.png' }}" alt="{{ conv.other_participant.name }}">
+                    <div class="conversation-info">
+                        <div class="participants">{{ conv.other_participant.name }}</div>
+                        <div class="post-title">Re: {{ conv.post.title }}</div>
+                        <div class="last-message">
+                            {% if conv.messages.last %}
+                                {% if conv.messages.last.sender.id == request.session.user_id %}You: {% endif %}{{ conv.messages.last.text }}
+                            {% else %}
+                                No messages yet.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="date">{{ conv.updated_at|date:"M d" }}</div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="no-conversations">
+                    <h2>No conversations yet.</h2>
+                    <p>When you message an owner about a listing, your conversation will appear here.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('conversationSearch');
+            const conversationItems = document.querySelectorAll('.conversation-item');
+            const noConversationsMessage = document.querySelector('.no-conversations');
+
+            searchInput.addEventListener('keyup', function () {
+                const searchTerm = searchInput.value.toLowerCase();
+                let visibleConversations = 0;
+
+                conversationItems.forEach(function (item) {
+                    const participantName = item.querySelector('.participants').textContent.toLowerCase();
+                    const postTitle = item.querySelector('.post-title').textContent.toLowerCase();
+
+                    if (participantName.includes(searchTerm) || postTitle.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                        visibleConversations++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // --- Notification Feature ---
+            const notificationBell = document.getElementById('notificationBell');
+            const notificationCount = document.getElementById('notificationCount');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+
+            notificationBell.addEventListener('click', function(event) {
+                event.stopPropagation();
+                const isHidden = notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '';
+                notificationDropdown.style.display = isHidden ? 'block' : 'none';
+            });
+
+            // Hide dropdown if clicking outside
+            document.addEventListener('click', function() {
+                notificationDropdown.style.display = 'none';
+            });
+            notificationDropdown.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent closing when clicking inside
+            });
+
+
+            function fetchNotifications(isInitialLoad = false) {
+                fetch('/api/notifications/unread/')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.unread_count > 0) {
+                            notificationCount.textContent = data.unread_count;
+                            notificationCount.style.display = 'flex';
+                            if (!isInitialLoad) { // Only show browser notification on subsequent updates
+                                if (Notification.permission === "granted") {
+                                    new Notification("Roomify Notification", { body: "You have new unread messages." });
+                                } else if (Notification.permission !== "denied") {
+                                    Notification.requestPermission().then(p => { if (p === "granted") new Notification("Roomify Notification", { body: "You have new unread messages." }); });
+                                }
+                            }
+                        } else {
+                            notificationCount.style.display = 'none';
+                        }
+
+                        let dropdownHtml = '<div class="notification-dropdown-header">Unread Messages</div>';
+                        if (data.conversations && data.conversations.length > 0) {
+                            data.conversations.forEach(conv => {
+                                dropdownHtml += `
+                                    <a href="/messages/conversation/${conv.id}/" class="notification-item">
+                                        <div>
+                                            New message from <span class="participant-name">${conv.participant_name}</span>
+                                        </div>
+                                        <div class="post-title">
+                                            Re: ${conv.post_title}
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                        } else {
+                            dropdownHtml += '<div class="notification-item">No new messages.</div>';
+                        }
+                        notificationDropdown.innerHTML = dropdownHtml;
+                    });
+            }
+
+            function connectWebSocket() {
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
+
+                notificationSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    console.log('Notification received via WebSocket:', data);
+                    // When a notification comes in, fetch the latest data to update the UI
+                    fetchNotifications();
+                };
+
+                notificationSocket.onclose = function(e) {
+                    console.error('Notification socket closed. Reconnecting in 5 seconds...');
+                    // Attempt to reconnect after a delay
+                    setTimeout(connectWebSocket, 5000);
+                };
+            }
+
+            fetchNotifications(true); // Fetch initial data on page load
+            connectWebSocket(); // Establish the real-time connection
+        });
+    </script>
+</body>
+</html>

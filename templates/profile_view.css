@@ -1,0 +1,88 @@
+:root {
+    --bg: #f6fbff;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --muted: #6b7280;
+    --text-primary: #1f2937;
+    --radius: 12px;
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+body {
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+    background-color: var(--bg);
+    margin: 0;
+    color: var(--text-primary);
+}
+.navbar {
+    background-color: var(--card);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar .logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--accent);
+}
+.navbar .user-menu a {
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 1.5rem;
+}
+.navbar .user-menu a:hover {
+    color: var(--accent);
+}
+.container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+.profile-card {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+.profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+.profile-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+.profile-header .role-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background-color: #eef2ff;
+    color: var(--accent);
+}
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+.detail-item .label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+}
+.detail-item .value {
+    font-size: 1.1rem;
+    font-weight: 500;
+}

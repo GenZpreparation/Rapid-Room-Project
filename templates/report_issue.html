@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Report an Issue{% endblock %}
+
+{% block content %}
+<style>
+    .container { max-width: 700px; margin: 2rem auto; padding: 0 2rem; }
+    .form-card { background-color: var(--card); padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); }
+    h1 { font-size: 1.8rem; margin: 0 0 0.5rem 0; }
+    p.lead { color: var(--muted); margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    input[type="text"], textarea, select {
+        width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #e6e9ef;
+        background: #fbfdff; font-size: 1rem; color: #0f172a; box-sizing: border-box;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    .btn {
+        display: inline-flex; background: var(--accent); color: #fff; padding: 12px 24px;
+        border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 1rem;
+    }
+    .btn-secondary { background-color: #e5e7eb; color: var(--text-primary); }
+    .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .messages { list-style-type: none; padding: 0; margin-bottom: 1.5rem; }
+    .messages li.error { padding: 1rem; border-radius: 10px; color: #842029; background-color: #f8d7da; }
+</style>
+
+<div class="container">
+    <div class="form-card">
+        <h1>Report a Maintenance Issue</h1>
+        <p class="lead">For your tenancy at: <strong>{{ tenancy.post.title }}</strong></p>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Issue Title</label>
+                <input type="text" id="title" name="title" placeholder="e.g., Leaky faucet in kitchen" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Detailed Description</label>
+                <textarea id="description" name="description" placeholder="Please provide as much detail as possible about the issue." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority Level</label>
+                <select id="priority" name="priority">
+                    <option value="low">Low (e.g., cosmetic issue)</option>
+                    <option value="medium" selected>Medium (e.g., appliance not working)</option>
+                    <option value="high">High (e.g., leak, no power)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Upload a Photo (Optional)</label>
+                <input type="file" id="image" name="image" accept="image/*">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn">Submit Request</button>
+                <a href="{% url 'student_tenancies' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

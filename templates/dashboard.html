@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+        .sidebar {
+            background-color: var(--card);
+            padding: 1.5rem;
+            border-right: 1px solid #e5e7eb;
+        }
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+        .sidebar-nav a .unread-badge {
+            margin-left: auto;
+            background-color: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 20px;
+            min-width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            box-sizing: border-box;
+        }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px;
+            text-decoration: none; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+        .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+        .sidebar-nav .theme-toggle-btn {
+            margin-top: auto; /* Pushes the button to the bottom */
+            background-color: #f0f3ff;
+            justify-content: center;
+        }
+        /* Icon styles */
+        .theme-toggle-btn .sun-icon,
+        .theme-toggle-btn .moon-icon {
+            width: 20px;
+            height: 20px;
+        }
+        /* Logic to show the correct icon based on theme */
+        body.dark-mode .theme-toggle-btn .sun-icon { display: none; }
+        body:not(.dark-mode) .theme-toggle-btn .moon-icon { display: none; }
+
+        body.dark-mode .sidebar-nav .theme-toggle-btn {
+            background-color: #374151;
+        }
+
+        .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+        .sidebar-nav .theme-toggle-btn {
+            margin-top: auto; /* Pushes the button to the bottom */
+            background-color: #f0f3ff;
+            justify-content: center;
+        }
+
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+        .navbar .user-menu a:hover {
+            color: var(--accent);
+        }
+        .main-content {
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .post-card-actions {
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Four equal columns for the four icons */
+            padding: 0.5rem;
+
+        }
+        .post-card-actions .btn-view {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            gap: 0.5rem;
+            display: flex;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+        .post-card-actions .btn-view:hover {
+            background-color: #1d4ed8; /* A darker shade of the accent color */
+        }
+        .post-card-actions .btn-edit {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #6b7280; /* Gray for edit */
+            color: #fff;
+            text-decoration: none;
+            gap: 0.5rem;
+            display: flex;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+        .post-card-actions .btn-edit:hover { background-color: #4b5563; }
+        .post-card-actions .btn-toggle {
+            display: inline-block;
+            padding: 8px 16px;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            color: #fff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-toggle.available {
+            background-color: #f97316; /* Orange for 'Mark as Rented' */
+        }
+        .btn-toggle.rented {
+            background-color: #22c55e; /* Green for 'Mark as Available' */
+        }
+
+        .post-card-actions .btn-delete {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #ef4444; /* Red for delete */
+            color: #fff;
+            gap: 0.5rem;
+            display: flex;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .post-card-actions svg {
+            width: 18px; height: 18px;
+        }
+        .post-card-actions .btn-delete:hover {
+            background-color: #dc2626; /* Darker red */
+        }
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+        .messages li.success {
+            padding: 1rem;
+            border-radius: 10px;
+            color: #0f5132;
+            background-color: #d1e7dd;
+            border: 1px solid #badbcc;
+        }
+        .post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .post-card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .post-card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #eef2ff;
+        }
+        .post-card-content {
+            padding: 1rem;
+            flex-grow: 1;
+        }
+        .post-card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+        .post-card-rent {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .post-card-date {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .post-card-location {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .no-posts {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 2px dashed #e5e7eb;
+        }
+        /* Additional styles for the search bar */
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        .search-input {
+            width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #e5e7eb; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .filter-form {
+            background-color: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        .filter-form .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .filter-form label { font-weight: 600; font-size: 0.85rem; }
+        .filter-form input, .filter-form select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.9rem; }
+        .filter-form .btn-filter { background: var(--accent); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+        .amenities-filter-group {
+            grid-column: 1 / -1; /* Span full width */
+            margin-top: 1rem;
+        }
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .amenity-checkbox { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .amenity-checkbox input { width: auto; }
+        .save-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.8);
+            border: none; border-radius: 50%; width: 36px; height: 36px; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; z-index: 10;
+        }
+        .save-btn svg { width: 20px; height: 20px; transition: all 0.2s ease; }
+        .save-btn.saved .icon-saved { display: block; }
+        .save-btn.saved .icon-unsaved { display: none; }
+        .save-btn:not(.saved) .icon-saved { display: none; }
+        .save-btn:not(.saved) .icon-unsaved { display: block; }
+        
+        /* Dark Mode Styles */
+        body.dark-mode {
+            --bg: #111827;
+            --card: #1f2937;
+            --text-primary: #f9fafb;
+            --muted: #9ca3af;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        body.dark-mode input, body.dark-mode select {
+            background-color: #374151;
+            color: #f9fafb;
+            border-color: #4b5563;
+        }
+        body.dark-mode .sidebar-nav .theme-toggle-btn {
+            background-color: #374151;
+        }
+        body.dark-mode .sidebar-nav .theme-toggle-btn { background-color: #374151; }
+    </style>
+</head>
+<body>
+    {% if user_role == 'owner' %}
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+                    <span>Roomify</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="{% url 'dashboard' %}" class="{% if not active_page or active_page == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="{% url 'inbox' %}">
+                        <i class="fas fa-inbox"></i> Messages
+                        {% if unread_message_count > 0 %}
+                            <span class="unread-badge">{{ unread_message_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'owner_rent_payments' %}" class="{% if active_page == 'rent_payments' %}active{% endif %}"><i class="fas fa-dollar-sign"></i> Rent Payments</a>
+                    <a href="{% url 'owner_maintenance_list' %}" class="{% if active_page == 'maintenance' %}active{% endif %}"><i class="fas fa-tools"></i> Maintenance</a>
+                    <a href="{% url 'tenant_list' %}" class="{% if active_page == 'my_tenants' %}active{% endif %}"><i class="fas fa-users"></i> My Tenants</a>
+                    <a href="{% url 'owner_booking_requests' %}"><i class="fas fa-bell"></i> Booking Requests</a>
+                    <a href="{% url 'owner_profile_setup' %}"><i class="fas fa-user-cog"></i> My Profile</a>
+                    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a href="#" class="theme-toggle-btn" title="Toggle Theme">
+                        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </a>
+                </nav>
+            </aside>
+            <main class="main-content">
+                <div class="header">
+                    <h1>Your Listings</h1>
+                    <a href="{% url 'create_post' %}" class="btn">Create Post</a>
+                </div>
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li class="{{ message.tags }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if posts %}
+                    <div class="post-grid">
+                        {% for post in posts %}
+                            <div class="post-card">
+                                {% if post.images.first %}
+                                    <img src="{{ post.images.first.image.url }}" alt="{{ post.title }}" class="post-card-image">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x200?text=No+Image" alt="No Image" class="post-card-image">
+                                {% endif %}
+                                <div class="post-card-content">
+                                    <h3 class="post-card-title">{{ post.title }}</h3>
+                                    <p class="post-card-location">{{ post.street_address }}, {{ post.city }}</p>
+                                    <p class="post-card-rent">₹ {{ post.rent|floatformat:0 }} / month</p>
+                                    <p class="post-card-date">Available from: {{ post.available_from|date:"F j, Y" }}</p>
+                                </div>
+                                <div class="post-card-actions">
+                                    {% if post.is_available %}
+                                        <a href="{% url 'owner_booking_requests' %}" class="btn-toggle available" title="Check Booking Requests">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'tenant_list' %}" class="btn-toggle rented" title="Manage Tenant">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'edit_post' post.id %}" class="btn-edit" title="Edit Listing">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 7.5z"></path></svg>
+                                    </a>
+                                    <a href="{% url 'post_detail' post.id %}" class="btn-view" title="View Details">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </a>
+                                    <form method="post" action="{% url 'delete_post' post.id %}" onsubmit="return confirm('Are you sure you want to delete this post? This cannot be undone.');" style="margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-delete" title="Delete Listing">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-posts">
+                        <h2>You haven't created any listings yet.</h2>
+                        <p>Click the "Create Post" button to add your first room for rent!</p>
+                    </div>
+                {% endif %}
+            </main>
+        </div>
+    {% else %} {# This is the existing layout for students #}
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+                    <span>Roomify</span>
+                </div>
+                {% include 'student_sidebar.html' with active_page='dashboard' %}
+            </aside>
+            <main class="main-content">
+                <div class="header">
+                    <h1>Available Rooms</h1>
+                </div>
+                <div class="search-container filter-form">
+                    <form method="get" action="{% url 'dashboard' %}" style="display: contents;">
+                        {% csrf_token %}
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="q">Search Keywords</label>
+                            <input type="text" id="q" name="q" class="search-input" placeholder="e.g., 'spacious', 'downtown'..." value="{{ search_query }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <select id="city" name="city">
+                                <option value="">All Cities</option>
+                                {% for city in cities %}
+                                    <option value="{{ city }}" {% if city == city_filter %}selected{% endif %}>{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="room_type">Room Type</label>
+                            <select id="room_type" name="room_type">
+                                <option value="">All Types</option>
+                                <option value="private" {% if room_type_filter == 'private' %}selected{% endif %}>Private Room</option>
+                                <option value="shared" {% if room_type_filter == 'shared' %}selected{% endif %}>Shared Room</option>
+                                <option value="apartment" {% if room_type_filter == 'apartment' %}selected{% endif %}>Full Apartment</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="min_rent">Min Rent (₹)</label>
+                            <input type="number" id="min_rent" name="min_rent" placeholder="e.g., 5000" value="{{ min_rent_filter }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="max_rent">Max Rent (₹)</label>
+                            <input type="number" id="max_rent" name="max_rent" placeholder="e.g., 15000" value="{{ max_rent_filter }}">
+                        </div>
+                        <div class="form-group amenities-filter-group">
+                            <label>Filter by Amenities</label>
+                            <div class="amenities-grid">
+                                {% for amenity in all_amenities %}
+                                    <div class="amenity-checkbox">
+                                        <input type="checkbox" name="amenities" value="{{ amenity }}" id="amenity-{{ amenity }}"
+                                            {% if amenity in amenities_filter %}checked{% endif %}>
+                                        <label for="amenity-{{ amenity }}">{{ amenity|capfirst }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-filter">Apply Filters</button>
+                    </form>
+                </div>
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li class="{{ message.tags }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if posts %}
+                    <div class="post-grid" style="margin-top: 1rem;">
+                        {% for post in posts %}
+                            <div class="post-card" style="position: relative;">
+                                <button class="save-btn {% if post.id in saved_post_ids %}saved{% endif %}" data-post-id="{{ post.id }}">
+                                    <svg class="icon-unsaved" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.273l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>
+                                    <svg class="icon-saved" fill="red" stroke="red" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.273l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>
+                                </button>
+                                {% if post.images.first %}
+                                    <img src="{{ post.images.first.image.url }}" alt="{{ post.title }}" class="post-card-image">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x200?text=No+Image" alt="No Image" class="post-card-image">
+                                {% endif %}
+                                <div class="post-card-content">
+                                    <h3 class="post-card-title">{{ post.title }}</h3>
+                                    <p class="post-card-location">{{ post.street_address }}, {{ post.city }}</p>
+                                    <p class="post-card-rent">₹ {{ post.rent|floatformat:0 }} / month</p>
+                                    <p class="post-card-date">Available from: {{ post.available_from|date:"F j, Y" }}</p>
+                                </div>
+                                <div class="post-card-actions">
+                                    <a href="{% url 'post_detail' post.id %}" class="btn-view" style="grid-column: 1 / -1;">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        <span>View Details</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-posts">
+                        <h2>No rooms found.</h2>
+                        <p>No listings match your search criteria. Try searching for something else or check back later!</p>
+                    </div>
+                {% endif %}
+            </main>
+        </div>
+    {% endif %}
+
+    <script>
+        (function() {
+            const themeToggle = document.querySelector('.theme-toggle-btn');
+            const body = document.body;
+
+            // Function to apply the theme
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+            };
+
+            // Check for saved theme in localStorage, or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+            // Handle button click
+            themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const currentTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+            });
+        })();
+    </script>
+    {% if user_role == 'student' %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+        // --- Save Button Logic ---
+        const saveButtons = document.querySelectorAll('.save-btn');
+        const csrfTokenInput = document.querySelector('form[method="get"] input[name="csrfmiddlewaretoken"]');
+        const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+        saveButtons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                const postId = this.dataset.postId;
+                fetch(`/post/toggle-save/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'saved') {
+                                this.classList.add('saved');
+                            } else if (data.status === 'unsaved') {
+                                this.classList.remove('saved');
+                            }
+                        })
+                        .catch(error => console.error('Fetch Error:', error));
+            });
+        });
+            });
+        </script>
+    {% endif %}
+
+</body>
+</html>

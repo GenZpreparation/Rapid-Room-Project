@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Maintenance Requests{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="{% static 'sidebar.css' %}">
+{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background-color: var(--card); padding: 1.5rem; border-right: 1px solid #e5e7eb; }
+    .sidebar .logo { font-weight: 700; font-size: 1.5rem; color: var(--accent); margin-bottom: 2rem; padding-left: 0.5rem; }
+    .main-content { padding: 2rem; }
+    .sidebar-nav a {
+        display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px;
+        text-decoration: none; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+    .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+    .sidebar-nav .theme-toggle-btn {
+        margin-top: auto; /* Pushes the button to the bottom */
+        background-color: #f0f3ff;
+        justify-content: center;
+    }
+    /* Icon styles */
+    .theme-toggle-btn .sun-icon,
+    .theme-toggle-btn .moon-icon {
+        width: 20px;
+        height: 20px;
+    }
+    /* Logic to show the correct icon based on theme */
+    body.dark-mode .theme-toggle-btn .sun-icon { display: none; }
+    body:not(.dark-mode) .theme-toggle-btn .moon-icon { display: none; }
+    body.dark-mode .sidebar-nav .theme-toggle-btn { background-color: #374151; }
+
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; margin: 0; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); }
+    .tabs { display: flex; border-bottom: 1px solid #e5e7eb; margin-bottom: 2rem; }
+    .tab-link { padding: 0.75rem 1.5rem; text-decoration: none; color: var(--muted); font-weight: 600; border-bottom: 3px solid transparent; }
+    .tab-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* New List-based Design */
+    .request-list {
+        background-color: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+    .request-item {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.2s ease;
+    }
+    .request-item:hover { background-color: #f9fafb; }
+    .request-item:last-child { border-bottom: none; }
+
+    .request-main { display: flex; align-items: center; gap: 1rem; }
+    .priority-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .request-details .request-title { font-weight: 600; color: var(--text-primary); }
+    .request-details .request-subtitle { font-size: 0.9rem; color: var(--muted); margin-top: 2px; display: block; }
+
+    .request-date, .request-action { color: var(--muted); font-size: 0.9rem; text-align: right; }
+    .request-action { font-size: 1.2rem; }
+
+    .status-badge, .priority-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 600; font-size: 0.8rem; }
+    .status-submitted { background-color: #e0e7ff; color: #4338ca; }
+    .status-in_progress { background-color: #fef3c7; color: #92400e; }
+    .status-completed { background-color: #dcfce7; color: #166534; }
+
+    /* Priority dot colors */
+    .priority-dot.priority-low { background-color: #22c55e; }
+    .priority-dot.priority-medium { background-color: #f59e0b; }
+    .priority-dot.priority-high { background-color: #ef4444; }
+
+    .no-requests {
+        text-align: center; padding: 3rem; background-color: var(--card); border-radius: var(--radius);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+        border: 2px dashed #e5e7eb; color: var(--muted);
+    }
+    .no-requests svg { width: 48px; height: 48px; color: #cbd5e1; }
+    .no-requests h2 { color: var(--text-primary); margin: 0; }
+    .no-requests p { margin: 0; max-width: 400px; }
+
+    body.dark-mode .request-item { border-color: #374151; }
+    body.dark-mode .request-item:hover { background-color: #1f2937; }
+    body.dark-mode {
+        --bg: #111827; --card: #1f2937; --text-primary: #f9fafb; --muted: #9ca3af;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    body.dark-mode .sidebar-nav .theme-toggle-btn {
+        background-color: #374151;
+    }
+</style>
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="{% if not active_page or active_page == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="{% url 'inbox' %}"><i class="fas fa-inbox"></i> Messages</a>
+            <a href="{% url 'owner_rent_payments' %}" class="{% if active_page == 'rent_payments' %}active{% endif %}"><i class="fas fa-dollar-sign"></i> Rent Payments</a>
+            <a href="{% url 'owner_maintenance_list' %}" class="{% if active_page == 'maintenance' %}active{% endif %}"><i class="fas fa-tools"></i> Maintenance</a>
+            <a href="{% url 'tenant_list' %}" class="{% if active_page == 'my_tenants' %}active{% endif %}"><i class="fas fa-users"></i> My Tenants</a>
+            <a href="{% url 'owner_booking_requests' %}"><i class="fas fa-bell"></i> Booking Requests</a>
+            <a href="{% url 'owner_profile_setup' %}"><i class="fas fa-user-cog"></i> My Profile</a>
+            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="#" class="theme-toggle-btn" title="Toggle Theme">
+                <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </a>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-tools"></i> Maintenance Requests</h1>
+        </div>
+
+        <div class="tabs">
+            <a href="#" class="tab-link active" data-tab="open">Open Requests ({{ open_requests_count }})</a>
+            <a href="#" class="tab-link" data-tab="closed">Closed Requests ({{ closed_requests_count }})</a>
+        </div>
+
+        <div id="open" class="tab-content active">
+            <div class="request-list">
+                {% for req in open_requests %}
+                    <a href="{% url 'maintenance_request_detail' req.id %}" class="request-item">
+                        <div class="request-main">
+                            <div class="priority-dot priority-{{ req.priority }}"></div>
+                            <div class="request-details">
+                                <span class="request-title">{{ req.title }}</span>
+                                <span class="request-subtitle">For {{ req.tenancy.post.title }} (Tenant: {{ req.tenancy.tenant.name }})</span>
+                            </div>
+                        </div>
+                        <div class="request-status">
+                            <span class="status-badge status-{{ req.status|slugify }}">{{ req.get_status_display }}</span>
+                        </div>
+                        <div class="request-date">
+                            <span>{{ req.created_at|timesince }} ago</span>
+                        </div>
+                        <div class="request-action">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                {% empty %}
+            </div>
+                <div class="no-requests">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2>No open maintenance requests.</h2>
+                    <p>When a tenant reports an issue, it will appear here for you to manage.</p>
+                </div>
+                {% endfor %}
+            {% if open_requests %}</div>{% endif %}
+        </div>
+
+        <div id="closed" class="tab-content">
+            <div class="request-list">
+                {% for req in closed_requests %}
+                    <a href="{% url 'maintenance_request_detail' req.id %}" class="request-item">
+                        <!-- Same structure as open requests for consistency -->
+                        ...
+                    </a>
+                {% empty %}
+            </div>
+                <div class="no-requests">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                    <h2>No closed maintenance requests.</h2>
+                    <p>Completed or resolved requests will be archived here for your records.</p>
+                </div>
+                {% endfor %}
+            {% if closed_requests %}</div>{% endif %}
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.dataset.tab;
+
+                tabLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                tabContents.forEach(content => {
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+
+    // --- Real-time updates for maintenance requests ---
+    function connectWebSocket() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
+
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            if (data.type === 'new_maintenance_request') {
+                const payload = data.payload;
+                const openRequestsList = document.querySelector('#open .request-list');
+                const noRequestsDiv = document.querySelector('#open .no-requests');
+                const openTabCounter = document.querySelector('.tab-link[data-tab="open"]');
+
+                // If the "no requests" message is showing, hide it.
+                if (noRequestsDiv) {
+                    noRequestsDiv.style.display = 'none';
+                }
+
+                // Create the new request item
+                const newRequestItem = document.createElement('a');
+                newRequestItem.href = `/maintenance-request/${payload.request_id}/`;
+                newRequestItem.className = 'request-item';
+                newRequestItem.innerHTML = `
+                    <div class="request-main">
+                        <div class="priority-dot priority-${payload.priority}"></div>
+                        <div class="request-details">
+                            <span class="request-title">${payload.title}</span>
+                            <span class="request-subtitle">For ${payload.post_title} (Tenant: ${payload.student_name})</span>
+                        </div>
+                    </div>
+                    <div class="request-status">
+                        <span class="status-badge status-submitted">Submitted</span>
+                    </div>
+                    <div class="request-date">
+                        <span>Just now</span>
+                    </div>
+                    <div class="request-action">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                `;
+
+                // Add a subtle highlight and prepend to the list
+                newRequestItem.style.backgroundColor = '#eef2ff';
+                openRequestsList.prepend(newRequestItem);
+                setTimeout(() => { newRequestItem.style.backgroundColor = ''; }, 3000);
+
+                // Update the counter in the tab
+                let currentCount = parseInt(openTabCounter.innerText.match(/\d+/)[0]);
+                openTabCounter.innerText = `Open Requests (${currentCount + 1})`;
+            }
+        };
+
+        notificationSocket.onclose = function(e) {
+            console.error('Maintenance socket closed. Reconnecting in 5 seconds...');
+            setTimeout(connectWebSocket, 5000);
+        };
+    }
+
+    connectWebSocket();
+</script>
+{% endblock %}

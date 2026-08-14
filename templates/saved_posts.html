@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Rooms</title>
+    <style>
+        :root {
+            --bg: #f6fbff; --card: #ffffff; --accent: #2563eb; --muted: #6b7280;
+            --text-primary: #1f2937; --radius: 12px; --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body { font-family: Inter, system-ui, Segoe UI, Roboto, Arial; background-color: var(--bg); margin: 0; color: var(--text-primary); }
+        .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+        .sidebar { background-color: var(--card); padding: 1.5rem; border-right: 1px solid #e5e7eb; }
+        .sidebar .logo { font-weight: 700; font-size: 1.5rem; color: var(--accent); margin-bottom: 2rem; padding-left: 0.5rem; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+        .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+        .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+        .main-content { padding: 2rem; }
+        .header { margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; margin: 0; }
+        .post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .post-card { 
+            background-color: var(--card); 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
+        }
+        .post-card-image { width: 100%; height: 200px; object-fit: cover; background-color: #eef2ff; }
+        .post-card-content { padding: 1.25rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .post-card-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.5rem 0; }
+        .post-card-rent { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: auto 0 1rem 0; }
+        .post-card-date { font-size: 0.85rem; color: var(--muted); }
+        .post-card-location { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.5rem; }
+        .post-card-actions { padding: 1rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: center; }
+        .btn-view { 
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; 
+            width: 100%; padding: 8px 16px; background-color: var(--accent); color: #fff; 
+            text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+        .btn-view:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-view svg { width: 18px; height: 18px; }
+        .save-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.8);
+            border: none; border-radius: 50%; width: 36px; height: 36px; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+        }
+        .save-btn svg { width: 20px; height: 20px; transition: all 0.2s ease; }
+        .save-btn:hover { transform: scale(1.1); }
+        .save-btn.saved .icon-saved { display: block; }
+        .save-btn.saved .icon-unsaved { display: none; }
+        .save-btn:not(.saved) .icon-saved { display: none; }
+        .save-btn:not(.saved) .icon-unsaved { display: block; }
+        .no-posts { 
+            text-align: center; 
+            padding: 3rem; 
+            background-color: var(--card); 
+            border-radius: var(--radius); 
+            border: 2px dashed #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            color: var(--muted);
+        }
+        .no-posts svg { width: 48px; height: 48px; color: #cbd5e1; }
+        .no-posts h2 { color: var(--text-primary); margin: 0; }
+        .no-posts p { margin: 0; max-width: 300px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+                <span>Roomify</span>
+            </div>
+            {% include 'student_sidebar.html' %}
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <h1>My Saved Rooms</h1>
+            </div>
+
+            {% if posts %}
+                <div class="post-grid">
+                    {% for post in posts %}
+                        <div class="post-card" style="position: relative;">
+                            <button class="save-btn saved" data-post-id="{{ post.id }}">
+                                <svg class="icon-unsaved" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.273l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>
+                                <svg class="icon-saved" fill="red" stroke="red" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.273l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>
+                            </button>
+                            {% if post.images.first %}
+                                <img src="{{ post.images.first.image.url }}" alt="{{ post.title }}" class="post-card-image">
+                            {% else %}
+                                <img src="https://via.placeholder.com/300x200?text=No+Image" alt="No Image" class="post-card-image">
+                            {% endif %}
+                            <div class="post-card-content">
+                                <h3 class="post-card-title">{{ post.title }}</h3>
+                                <p class="post-card-location">{{ post.street_address }}, {{ post.city }}</p>
+                                <p class="post-card-rent">₹ {{ post.rent|floatformat:0 }} / month</p>
+                                <p class="post-card-date">Available from: {{ post.available_from|date:"F j, Y" }}</p>
+                            </div>
+                            <div class="post-card-actions">
+                                <a href="{% url 'post_detail' post.id %}" class="btn-view">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    <span>View Details</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-posts">
+                    <h2>You haven't saved any rooms yet.</h2>
+                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.273l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>
+                    <p>Click the heart icon on any listing to save it for later.</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+    <div id="csrf-token-container" style="display: none;">
+        {% csrf_token %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const saveButtons = document.querySelectorAll('.save-btn');
+            // Correctly get the CSRF token from the hidden input field.
+            const csrfTokenInput = document.querySelector('#csrf-token-container input[name="csrfmiddlewaretoken"]');
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+            
+            saveButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const postId = this.dataset.postId;
+                    const postCard = this.closest('.post-card'); // Find the parent card
+
+                    fetch(`/post/toggle-save/${postId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'unsaved') {
+                            // On the "Saved Posts" page, unsaving should remove the card
+                            postCard.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Fetch Error:', error));
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

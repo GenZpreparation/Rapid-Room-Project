@@ -1,0 +1,257 @@
+:root {
+    --bg: #f6fbff;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --muted: #6b7280;
+    --text-primary: #1f2937;
+    --radius: 12px;
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+body {
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+    background-color: var(--bg);
+    margin: 0;
+    color: var(--text-primary);
+}
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+}
+.sidebar {
+    background-color: var(--card);
+    padding: 1.5rem;
+    border-right: 1px solid #e5e7eb;
+}
+.sidebar .logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    padding-left: 0.5rem;
+}
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sidebar-nav a:hover {
+    background-color: #f0f3ff;
+    color: var(--accent);
+}
+.sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+.navbar {
+    background-color: var(--card);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar .logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--accent);
+}
+.navbar .user-menu a {
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 1.5rem;
+}
+.navbar .user-menu a:hover {
+    color: var(--accent);
+}
+.main-content {
+    padding: 2rem;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+.header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+}
+.post-card-actions {
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Four equal columns for the four icons */
+    padding: 0.5rem;
+
+}
+.post-card-actions .btn-view {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    gap: 0.5rem;
+    display: flex;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+.post-card-actions .btn-view:hover {
+    background-color: #1d4ed8; /* A darker shade of the accent color */
+}
+.post-card-actions .btn-edit {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #6b7280; /* Gray for edit */
+    color: #fff;
+    text-decoration: none;
+    gap: 0.5rem;
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+.post-card-actions .btn-edit:hover { background-color: #4b5563; }
+.post-card-actions .btn-toggle {
+    display: inline-block;
+    padding: 8px 16px;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.btn-toggle.available {
+    background-color: #f97316; /* Orange for 'Mark as Rented' */
+}
+.btn-toggle.rented {
+    background-color: #22c55e; /* Green for 'Mark as Available' */
+}
+
+.post-card-actions .btn-delete {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #ef4444; /* Red for delete */
+    color: #fff;
+    gap: 0.5rem;
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.post-card-actions svg {
+    width: 18px; height: 18px;
+}
+.post-card-actions .btn-delete:hover {
+    background-color: #dc2626; /* Darker red */
+}
+.messages {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+.messages li.success {
+    padding: 1rem;
+    border-radius: 10px;
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border: 1px solid #badbcc;
+}
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.post-card {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.post-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #eef2ff;
+}
+.post-card-content {
+    padding: 1rem;
+    flex-grow: 1;
+}
+.post-card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
+.post-card-rent {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+.post-card-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+.post-card-location {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+.no-posts {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--card);
+    border-radius: var(--radius);
+    border: 2px dashed #e5e7eb;
+}
+/* Additional styles for the search bar */
+.search-container {
+    margin-bottom: 2rem;
+}
+.search-input {
+    width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #e5e7eb; font-size: 1rem;
+    box-sizing: border-box;
+}

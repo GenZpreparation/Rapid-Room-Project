@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RooMRentApp{% endblock %}</title>
+    <style>
+
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        /* Dark Mode Styles */
+        body.dark-mode {
+            --bg: #111827; /* Darker background */
+            --card: #1f2937; /* Darker card background */
+            --text-primary: #f9fafb; /* Lighter text */
+            --muted: #9ca3af; /* Muted text for dark mode */
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Style for inputs in dark mode */
+        body.dark-mode input[type="text"], body.dark-mode input[type="email"], body.dark-mode input[type="password"], body.dark-mode input[type="number"], body.dark-mode input[type="tel"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode textarea {
+            background-color: #374151;
+            color: #f9fafb;
+            border-color: #4b5563;
+        }
+
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+<script>
+    (function() {
+        const themeToggle = document.querySelector('.theme-toggle-btn');
+        const body = document.body;
+
+        // Function to apply the theme
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+        };
+
+        // Check for saved theme in localStorage, or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    })();
+</script>
+</html>

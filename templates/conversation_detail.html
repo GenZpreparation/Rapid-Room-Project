@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation with {{ other_participant.name }}</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* Prevent the main body from ever scrolling */
+        }
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+        .chat-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Allows this container to fill the space */
+            box-sizing: border-box;
+            background-color: var(--card);
+            overflow: hidden; /* Prevent this container from causing page scroll */
+        }
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: center;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+        .chat-header h1 { font-size: 1.2rem; margin: 0; }
+        .chat-header p { margin: 4px 0 0 0; color: var(--muted); font-size: 0.9rem; }
+        .message-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+        .message-bubble.sent {
+            background-color: var(--accent);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .message-bubble.received {
+            background-color: #e5e7eb;
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .message-form {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .message-form textarea {
+            flex-grow: 1;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            resize: none;
+            height: 40px;
+        }
+        .message-form button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <div class="user-menu">
+            <a href="{% url 'inbox' %}">Back to Inbox</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>{{ other_participant.name }}</h1>
+            <p>Regarding: <a href="{% url 'post_detail' conversation.post.id %}">{{ conversation.post.title }}</a></p>
+        </div>
+
+        <div class="message-list" id="message-list">
+            {% for message in conversation.messages.all %}
+                <div class="message-bubble {% if message.sender.id == request.session.user_id %}sent{% else %}received{% endif %}">
+                    {{ message.text }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <form class="message-form" method="post">
+            {% csrf_token %}
+            <textarea name="message_text" placeholder="Type your message..." required></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    {{ conversation.id|json_script:"conversation-id" }}
+    {{ request.session.user_id|json_script:"user-id" }}
+
+    <script>
+        // Scroll to the bottom of the message list on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageList = document.getElementById('message-list');
+            messageList.scrollTop = messageList.scrollHeight;
+
+            // Securely parse data passed from Django
+            const conversationId = JSON.parse(document.getElementById('conversation-id').textContent);
+            const currentUserId = JSON.parse(document.getElementById('user-id').textContent);
+
+            const messageInput = document.querySelector('textarea[name="message_text"]');
+            const messageForm = document.querySelector('.message-form');
+
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const chatSocket = new WebSocket(
+                wsProtocol + '//' + window.location.host + '/ws/chat/' + conversationId + '/'
+            );
+
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                
+                // The message should only be appended for the user who is NOT the sender.
+                // The sender's page reloads, so they don't need this real-time update.
+                if (data.sender_id != currentUserId) { appendMessage(data.text, 'received'); }
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            // Function to append a new message bubble to the list
+            function appendMessage(text, type) {
+                const messageBubble = document.createElement('div');
+                messageBubble.classList.add('message-bubble', type);
+                messageBubble.textContent = text;
+                messageList.appendChild(messageBubble);
+                // Scroll to the new message
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+
+            // Optional: Allow sending message with Enter key
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Prevent new line
+                    messageForm.dispatchEvent(new Event('submit', {cancelable: true}));
+                }
+            });
+
+            // When the form is submitted, the page will reload, and the new message
+            // will be rendered by Django. The WebSocket `onmessage` logic above
+            // is primarily for the *other* user in the chat to receive the message instantly.
+            messageForm.addEventListener('submit', function() {
+                // Clear the input field immediately for a better UX
+                setTimeout(() => { messageInput.value = ''; }, 0);
+            });
+        });
+    </script>
+</body>
+</html>

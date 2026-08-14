@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}My Rent Payments{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+{% block content %}
+<style>
+    .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background-color: var(--card); padding: 1.5rem; border-right: 1px solid #e5e7eb; }
+    .sidebar .logo { font-weight: 700; font-size: 1.5rem; color: var(--accent); margin-bottom: 2rem; padding-left: 0.5rem; }
+    body.dark-mode .tenancy-card, body.dark-mode .no-tenancy { background-color: #1f2937; border-color: #374151; }
+    body.dark-mode .tenancy-header, body.dark-mode .next-payment-card { background-color: #374151; border-color: #4b5563; }
+    body.dark-mode .payment-table th, body.dark-mode .payment-table td { border-color: #4b5563; }
+    body.dark-mode .payment-table th { color: #9ca3af; }
+    .main-content { padding: 2rem; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; margin: 0; }
+    .tenancy-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    .tenancy-header {
+        background-color: #f9fafb;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .tenancy-header h2 { font-size: 1.2rem; margin: 0; }
+    .tenancy-header .owner-info { font-size: 0.9rem; color: #6b7280; }
+    .next-payment-card {
+        background-color: #f9fafb;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1.5rem;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
+    .next-payment-card .label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+    .next-payment-card .amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2563eb;
+    }
+    .payment-table { width: 100%; border-collapse: collapse; }
+    .payment-table th, .payment-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .payment-table tr:last-child td { border-bottom: none; }
+    .payment-table th { font-size: 0.8rem; text-transform: uppercase; color: #6b7280; font-weight: 600; }
+    .status-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 600; font-size: 0.8rem; }
+    .status-paid { background-color: #dcfce7; color: #166534; }
+    .status-unpaid { background-color: #fee2e2; color: #991b1b; }
+    .action-btn {
+        background-color: #2563eb; color: white; border: none;
+        padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer;
+        font-weight: 600; text-decoration: none; display: inline-block;
+    }
+    .action-btn:hover { background-color: #1d4ed8; }
+    .no-tenancy { text-align: center; padding: 3rem; background-color: #fff; border-radius: 12px; }
+    .messages { list-style-type: none; padding: 0; margin-bottom: 1.5rem; }
+    .messages li.success { padding: 1rem; border-radius: 10px; color: #0f5132; background-color: #d1e7dd; }
+    .messages li.error { padding: 1rem; border-radius: 10px; color: #842029; background-color: #f8d7da; }
+</style>
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        {% include 'student_sidebar.html' %}
+    </aside>
+    <main class="main-content">
+        <div class="header">
+            <h1>My Rent Payments</h1>
+        </div>
+
+        <div class="shortcut-buttons" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <a href="{% url 'dashboard' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-search"></i> Available Rooms</a>
+            <a href="{% url 'student_bookings' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a href="{% url 'student_tenancies' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-house-user"></i> My Tenancies</a>
+        </div>
+
+        <style>
+            .shortcut-buttons .action-btn {
+                padding: 0.75rem 1.25rem;
+                border-radius: 10px;
+                font-size: 0.95rem;
+            }
+        </style>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% for tenancy in active_tenancies %}
+            <div class="tenancy-card">
+                <div class="tenancy-header">
+                    <h2>{{ tenancy.post.title }}</h2>
+                    <div class="owner-info">
+                        <i class="fas fa-user-tie"></i> Owner: <strong>{{ tenancy.post.author.name }}</strong> | <i class="fas fa-calendar-alt"></i> Since: {{ tenancy.start_date|date:"F d, Y" }}
+                    </div>
+                </div>
+
+                {% if tenancy.next_unpaid_payment %}
+                <div class="next-payment-card">
+                    <div class="label">Next Payment Due: {{ tenancy.next_unpaid_payment.due_date|date:"F j, Y" }}</div>
+                    <div class="amount">₹{{ tenancy.next_unpaid_payment.amount|floatformat:2 }}</div>
+                    <a href="{% url 'process_payment' tenancy.next_unpaid_payment.id %}" class="action-btn" style="margin-top: 1rem;"><i class="fas fa-credit-card"></i> Pay Now</a>
+                </div>
+                {% endif %}
+
+                <table class="payment-table">
+                    <thead>
+                        <tr>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Paid On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in tenancy.payments.all %}
+                        <tr>
+                            <td><i class="far fa-calendar-alt" style="color: #6b7280; margin-right: 8px;"></i>{{ payment.due_date|date:"F Y" }}</td>
+                            <td>₹{{ payment.amount|floatformat:2 }}</td>
+                            <td>
+                                <span class="status-badge {% if payment.status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if payment.paid_on %}
+                                    <i class="fas fa-check" style="color: #22c55e; margin-right: 8px;"></i>{{ payment.paid_on|date:"M d, Y" }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% empty %}
+            <div class="no-tenancy">
+                <h2>You do not have an active tenancy.</h2>
+                <p>Your rent payment schedule will appear here once you have an active tenancy.</p>
+            </div>
+        {% endfor %}
+    </main>
+</div>
+{% endblock %}

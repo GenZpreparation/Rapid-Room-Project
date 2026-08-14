@@ -1,0 +1,196 @@
+:root {
+    --bg: #f6fbff;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --muted: #6b7280;
+    --text-primary: #1f2937;
+    --radius: 12px;
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+body {
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+    background-color: var(--bg);
+    margin: 0;
+    color: var(--text-primary);
+}
+/* Navbar from dashboard */
+.navbar {
+    background-color: var(--card);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.navbar .logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--accent);
+}
+.navbar .user-menu a {
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 1.5rem;
+}
+.container {
+    max-width: 1100px; /* Wider container for two columns */
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+.detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 2/3 for images, 1/3 for info */
+    gap: 2rem;
+}
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.main-image img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    background-color: #eef2ff;
+}
+.thumbnail-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+.thumbnail-strip img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border: 2px solid transparent;
+}
+.thumbnail-strip img:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+.thumbnail-strip img.active {
+    opacity: 1;
+    border-color: var(--accent);
+}
+.info-card {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+.info-card h1 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+}
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+.status-badge.available { background-color: #d1e7dd; color: #0f5132; }
+.status-badge.rented { background-color: #f8d7da; color: #842029; }
+.key-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+.detail-item { display: flex; align-items: center; gap: 0.75rem; }
+.detail-item svg { width: 20px; height: 20px; color: var(--muted); }
+.detail-item span { font-weight: 500; }
+.rent-contact-section {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+.rent-contact-section .rent {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.5rem 0;
+}
+.rent-contact-section .contact {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem 0;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+.description { line-height: 1.7; color: var(--muted); }
+.amenities-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.amenities-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+/* Styles for owner action buttons, adapted from dashboard */
+.owner-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+.owner-actions .action-buttons {
+    display: grid; /* Use grid for perfect equal columns */
+    grid-template-columns: 1fr 1fr 1fr; /* Create three equal-width columns */
+    gap: 0.75rem; /* Space between buttons */
+}
+
+.action-buttons .btn, .action-buttons button {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    justify-content: center;
+    gap: 0.5rem; /* Space between icon and text */
+    width: 100%;
+    padding: 8px 12px; /* Reduced padding to make buttons smaller */
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem; /* Reduced font size */
+    text-align: center;
+    border: none;
+    border: 1px solid transparent; /* Subtle border for definition */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    box-sizing: border-box;
+}
+.btn.edit { background-color: #6b7280; color: #fff; }
+.btn.edit:hover { background-color: #4b5563; border-color: #4b5563; }
+.btn.available { background-color: #f97316; color: #fff; }
+.btn.rented { background-color: #22c55e; color: #fff; }
+.btn.delete { background-color: #ef4444; color: #fff; }
+.action-buttons svg { width: 16px; height: 16px; }
+.btn.delete:hover { background-color: #dc2626; }
+.amenities-list li svg { width: 18px; height: 18px; color: var(--accent); }
+
+@media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 1fr; }
+    .info-card { margin-top: 2rem; }
+}

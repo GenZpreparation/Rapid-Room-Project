@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}My Tenancies{% endblock %}
+{% block extra_head %}
+<style>
+    .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background-color: var(--card); padding: 1.5rem; border-right: 1px solid #e5e7eb; }
+    .sidebar .logo { font-weight: 700; font-size: 1.5rem; color: var(--accent); margin-bottom: 2rem; padding-left: 0.5rem; }
+    .main-content { padding: 2rem; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; margin: 0; }
+    .section-title { font-size: 1.5rem; font-weight: 700; margin: 2rem 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+    .tenancy-card {
+        background-color: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+    .tenancy-card-image { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; background-color: #eef2ff; }
+    .tenancy-card-content { flex-grow: 1; }
+    .tenancy-card-content h3 { margin: 0 0 0.5rem 0; font-size: 1.3rem; }
+    .tenancy-card-content p { margin: 0.25rem 0; color: var(--muted); }
+    .tenancy-card-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    .btn {
+        display: inline-flex; align-items: center; justify-content: center; background: var(--accent);
+        color: #fff; padding: 10px 18px; border-radius: 10px; border: none;
+        font-weight: 700; cursor: pointer; text-decoration: none;
+    }
+    .btn-secondary { background-color: #e5e7eb; color: var(--text-primary); }
+    .no-tenancies {
+        text-align: center; padding: 3rem; background-color: var(--card); border-radius: var(--radius);
+        border: 2px dashed #e5e7eb; color: var(--muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        {% include 'student_sidebar.html' %}
+    </aside>
+    <main class="main-content">
+        <div class="header">
+            <h1>My Tenancies</h1>
+        </div>
+
+        <!-- Active Tenancies Section -->
+        <h2 class="section-title">Active Tenancy</h2>
+        {% if active_tenancies %}
+            {% for tenancy in active_tenancies %}
+            <div class="tenancy-card">
+                {% if tenancy.post.images.first %}
+                    <img src="{{ tenancy.post.images.first.image.url }}" alt="{{ tenancy.post.title }}" class="tenancy-card-image">
+                {% else %}
+                    <img src="https://via.placeholder.com/120x120?text=No+Image" alt="No Image" class="tenancy-card-image">
+                {% endif %}
+                <div class="tenancy-card-content">
+                    <h3>{{ tenancy.post.title }}</h3>
+                    <p>{{ tenancy.post.street_address }}, {{ tenancy.post.city }}</p>
+                    <p><strong>Owner:</strong> 
+                        <a href="{% url 'public_profile' tenancy.post.author.id %}" style="color: var(--muted); text-decoration: none;">{{ tenancy.post.author.name }}</a>
+                    </p>
+                    <p><strong>Started on:</strong> {{ tenancy.start_date|date:"F j, Y" }}</p>
+                </div>
+                <div class="tenancy-card-actions">
+                    <a href="{% url 'post_detail' tenancy.post.id %}" class="btn btn-secondary">View Listing</a>
+                    <a href="{% url 'report_issue' tenancy.id %}" class="btn">Report an Issue</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-tenancies">
+                <p>You do not have any active tenancies.</p>
+                <small>An active tenancy appears here after an owner accepts your booking request.</small>
+            </div>
+        {% endif %}
+
+        <!-- Past Tenancies Section -->
+        <h2 class="section-title">Past Tenancies</h2>
+        {% if past_tenancies %}
+            {% for tenancy in past_tenancies %}
+            <div class="tenancy-card">
+                {% if tenancy.post.images.first %}
+                    <img src="{{ tenancy.post.images.first.image.url }}" alt="{{ tenancy.post.title }}" class="tenancy-card-image">
+                {% else %}
+                    <img src="https://via.placeholder.com/120x120?text=No+Image" alt="No Image" class="tenancy-card-image">
+                {% endif %}
+                <div class="tenancy-card-content">
+                    <h3>{{ tenancy.post.title }}</h3>
+                    <p>{{ tenancy.post.city }}, {{ tenancy.post.state }}</p>
+                    <p><strong>Ended on:</strong> {{ tenancy.end_date|date:"F j, Y" }}</p>
+                </div>
+                <div class="tenancy-card-actions">
+                    <a href="{% url 'post_detail' tenancy.post.id %}" class="btn btn-secondary">View Listing</a>
+                    <a href="{% url 'post_detail' tenancy.post.id %}" class="btn">Write a Review</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-tenancies">
+                <p>You have no past tenancies.</p>
+                <small>Ended tenancies will appear here, allowing you to leave a review.</small>
+            </div>
+        {% endif %}
+
+    </main>
+</div>
+{% endblock %}

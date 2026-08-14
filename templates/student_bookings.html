@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: var(--card);
+            padding: 1.5rem;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+
+        .sidebar-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+        .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+        .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+        .sidebar-nav .theme-toggle-btn { margin-top: auto; background-color: #f0f3ff; justify-content: center; }
+        .theme-toggle-btn .sun-icon, .theme-toggle-btn .moon-icon { width: 20px; height: 20px; }
+        body.dark-mode .theme-toggle-btn .sun-icon { display: none; }
+        body:not(.dark-mode) .theme-toggle-btn .moon-icon { display: none; }
+        body.dark-mode .sidebar-nav .theme-toggle-btn {
+            background-color: #374151;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .booking-table th,
+        .booking-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .booking-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--muted);
+            background-color: #f9fafb;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+        }
+
+        .status-pending {
+            background-color: #fffbeb;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .status-accepted {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #a7f3d0;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .btn-cancel {
+            background-color: #6b7280;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+                <span>Roomify</span>
+            </div>
+            {% include 'student_sidebar.html' %}
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <h1>My Booking Requests</h1>
+            </div>
+            {% if bookings %}
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>Room Title</th>
+                        <th>Owner</th>
+                        <th>Date Sent</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr data-booking-id="{{ booking.id }}">
+                        <td><a href="{% url 'post_detail' booking.post.id %}">{{ booking.post.title }}</a></td>
+                        <td>{{ booking.post.author.name }}</td>
+                        <td>{{ booking.created_at|date:"F j, Y" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+                        </td>
+                        <td class="action-cell">
+                            {% if booking.status == 'pending' %}
+                                <form method="post" action="{% url 'cancel_booking' booking.id %}" onsubmit="return confirm('Are you sure you want to cancel this booking request?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-cancel">Cancel Request</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-bookings">
+                <h2>You haven't booked any rooms yet.</h2>
+                <p>Browse the dashboard and send a booking request for a room you're interested in.</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+    <script>
+        // --- Real-time updates for booking status ---
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
+
+            notificationSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+
+                if (data.type === 'booking_status_update') {
+                    const payload = data.payload;
+                    const bookingRow = document.querySelector(`tr[data-booking-id="${payload.booking_id}"]`);
+
+                    if (bookingRow) {
+                        const statusBadge = bookingRow.querySelector('.status-badge');
+                        const actionCell = bookingRow.querySelector('.action-cell');
+
+                        // Update status badge
+                        statusBadge.classList.remove('status-pending');
+                        statusBadge.classList.add(`status-${payload.status}`);
+                        statusBadge.textContent = payload.status;
+
+                        // Remove the "Cancel Request" button
+                        if (actionCell) {
+                            actionCell.innerHTML = '';
+                        }
+
+                        // Highlight the row to draw attention to the change
+                        bookingRow.style.backgroundColor = payload.status === 'accepted' ? '#dcfce7' : '#fee2e2';
+                        setTimeout(() => { bookingRow.style.backgroundColor = ''; }, 3000);
+                    }
+                }
+            };
+
+            notificationSocket.onclose = function(e) {
+                console.error('Booking status socket closed. Reconnecting in 5 seconds...');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+        connectWebSocket();
+    </script>
+</body>
+
+</html>

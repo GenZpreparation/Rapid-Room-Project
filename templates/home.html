@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Account — Login / Register</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #eef2ff 0%, var(--bg) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            --bg: #111827;
+            --card: #1f2937;
+            --text-primary: #f9fafb;
+            --muted: #9ca3af;
+        }
+        body.dark-mode input, body.dark-mode select {
+            background-color: #374151;
+            color: #f9fafb;
+            border-color: #4b5563;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 1300px;
+            display: grid;
+            grid-template-columns: 1fr 420px 420px;
+            gap: 28px;
+            align-items: center
+        }
+
+        /* Adjusted grid for two cards */
+        .info {
+            background: transparent;
+            border-radius: var(--radius);
+            padding: 34px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.04)
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: var(--text-primary);
+        }
+
+        p.lead {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px
+        }
+
+        /* CSS-only tabs using radios */
+        .toggle {
+            display: none
+        }
+
+        .tab-label {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        /* Specific IDs for each card's tabs */
+        #owner-tab-login:checked+label[for="owner-tab-login"],
+        #owner-tab-register:checked+label[for="owner-tab-register"],
+        #student-tab-login:checked+label[for="student-tab-login"],
+        #student-tab-register:checked+label[for="student-tab-register"] {
+            background: linear-gradient(90deg, #eef2ff, #f3f0ff);
+            color: var(--accent);
+            border-color: rgba(37, 99, 235, 0.12)
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        label.field {
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            /* Added number, date, select */
+
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #e6e9ef;
+            background: #fbfdff;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Message styling from dashboard.html */
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 1rem;
+            /* Adjusted for tighter spacing in cards */
+        }
+
+        .messages li {
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .messages li.success {
+            background-color: #28a745;
+        }
+
+        .messages li.error {
+            background-color: #dc3545;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid rgba(193, 240, 220, 0.194);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .btn.ghost:hover {
+            background: #16a34a; /* A nice green for the hover effect */
+            color: #fff;
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 8px
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .panels {
+            position: relative
+        }
+
+        .panel {
+            display: none
+        }
+
+        /* Specific IDs for each card's panels */
+        #owner-tab-login:checked~.panels #owner-panel-login,
+        #owner-tab-register:checked~.panels #owner-panel-register,
+        #student-tab-login:checked~.panels #student-panel-login,
+        #student-tab-register:checked~.panels #student-panel-register {
+            display: block
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--accent)
+        }
+
+        @media (max-width:1300px) {
+            .wrap {
+                grid-template-columns: 1fr 1fr;
+                max-width: 900px;
+            }
+
+            .info {
+                grid-column: 1 / -1;
+                text-align: center;
+            }
+        }
+
+        /* Stack info on top, 2 columns for cards */
+        @media (max-width:900px) {
+            .wrap {
+                grid-template-columns: 1fr;
+                gap: 18px;
+                max-width: 450px;
+            }
+        }
+
+        /* Stack all on small screens */
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="info">
+            <div class="card">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1rem;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/>
+                    </svg>
+                    <h1 style="font-size: 2rem; color: var(--text-primary);">Roomify</h1>
+                </div>
+                <p class="lead">Find your perfect room or list your property for rent. We connect students and owners
+                    seamlessly.</p>
+                <p class="muted" style="margin-top:14px">Need help? contact@example.com</p>
+            </div>
+        </div>
+
+        <!-- Room Owner / Hostel Owner Authentication Card -->
+        <div class="card" role="region" aria-label="Owner Authentication">
+            <h1>Room Owner</h1>
+            <!-- Radios MUST be siblings of the .panels div for the CSS to work -->
+            <input class="toggle" type="radio" name="owner-auth-tab" id="owner-tab-login" checked>
+            <input class="toggle" type="radio" name="owner-auth-tab" id="owner-tab-register">
+
+            <div class="tabs">
+                <label class="tab-label" for="owner-tab-login">Login</label>
+                <label class="tab-label" for="owner-tab-register">Register</label>
+            </div>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="panels" style="margin-top:14px">
+                <!-- Owner Login panel -->
+                <div id="owner-panel-login" class="panel" role="tabpanel" aria-labelledby="owner-tab-login">
+                    <form method="post" action="{% url 'home page' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="role_type" value="owner">
+                        <label class="field">Email
+                            <input type="email" name="username" placeholder="you@example.com" required autofocus>
+                        </label>
+                        <label class="field">Password
+                            <input type="password" name="password" placeholder="Enter your password" required>
+                        </label>
+                        <div class="row" style="margin-top:6px">
+                            <button type="submit" class="btn">Sign in as Owner</button>
+                            <label for="owner-tab-register" class="btn ghost"
+                                style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">Register
+                                as Owner</label>
+                        </div>
+                        <div class="small"><a href="#">Forgot password?</a></div>
+                    </form>
+                </div>
+
+                <!-- Owner Register panel -->
+                <div id="owner-panel-register" class="panel" role="tabpanel" aria-labelledby="owner-tab-register">
+                    <form method="post" action="{% url 'register_owner' %}">
+                        {% csrf_token %}
+                        <label class="field">Full name
+                            <input type="text" name="full_name" placeholder="Jane Doe" required>
+                        </label>
+                        <label class="field">Email
+                            <input type="email" name="email" placeholder="you@example.com" required>
+                        </label>
+                        <label class="field">Password
+                            <input type="password" name="password1" placeholder="At least 8 characters" minlength="8"
+                                required>
+                        </label>
+                        <label class="field">Confirm password
+                            <input type="password" name="password2" placeholder="Repeat password" minlength="8"
+                                required>
+                        </label>
+                        <div class="row" style="margin-top:6px">
+                            <button type="submit" class="btn">Create Owner Account</button>
+                            <label for="owner-tab-login" class="btn ghost"
+                                style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">Back
+                                to Owner Login</label>
+                        </div>
+                        <div class="small">By creating an account you agree to our <a href="#">Terms</a>.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student / Tenant Authentication Card -->
+        <div class="card" role="region" aria-label="Student Authentication">
+            <h1>Student / Tenant</h1>
+            <!-- Radios MUST be siblings of the .panels div for the CSS to work -->
+            <input class="toggle" type="radio" name="student-auth-tab" id="student-tab-login" checked>
+            <input class="toggle" type="radio" name="student-auth-tab" id="student-tab-register">
+
+            <div class="tabs">
+                <label class="tab-label" for="student-tab-login">Login</label>
+                <label class="tab-label" for="student-tab-register">Register</label>
+            </div>
+
+            <div class="panels" style="margin-top:14px">
+                <!-- Student Login panel -->
+                <div id="student-panel-login" class="panel" role="tabpanel" aria-labelledby="student-tab-login">
+                    <form method="post" action="{% url 'home page' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="role_type" value="student">
+                        <label class="field">Email
+                            <input type="email" name="username" placeholder="you@example.com" required autofocus>
+                        </label>
+                        <label class="field">Password
+                            <input type="password" name="password" placeholder="Enter your password" required>
+                        </label>
+                        <div class="row" style="margin-top:6px">
+                            <button type="submit" class="btn">Sign in as Student</button>
+                            <label for="student-tab-register" class="btn ghost"
+                                style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">Register
+                                as Student</label>
+                        </div>
+                        <div class="small"><a href="#">Forgot password?</a></div>
+                    </form>
+                </div>
+
+                <!-- Student Register panel -->
+                <div id="student-panel-register" class="panel" role="tabpanel"
+                    aria-labelledby="student-tab-register">
+                    <form method="post" action="{% url 'register_student' %}">
+                        {% csrf_token %}
+                        <label class="field">Full name
+                            <input type="text" name="full_name" placeholder="John Doe" required>
+                        </label>
+                        <label class="field">Email
+                            <input type="email" name="email" placeholder="you@example.com" required>
+                        </label>
+                        <label class="field">Password
+                            <input type="password" name="password1" placeholder="At least 8 characters" minlength="8"
+                                required>
+                        </label>
+                        <label class="field">Confirm password
+                            <input type="password" name="password2" placeholder="Repeat password" minlength="8"
+                                required>
+                        </label>
+                        <label class="field">Age
+                            <input type="number" name="age" placeholder="e.g., 20" min="16" max="99" required>
+                        </label>
+                        <label class="field">Gender
+                            <select name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </label>
+                        <label class="field">Date of Birth
+                            <input type="date" name="dob" required>
+                        </label>
+                        <div class="row" style="margin-top:6px">
+                            <button type="submit" class="btn">Create Student Account</button>
+                            <label for="student-tab-login" class="btn ghost"
+                                style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">Back
+                                to Student Login</label>
+                        </div>
+                        <div class="small">By creating an account you agree to our <a href="#">Terms</a>.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const body = document.body;
+
+        // Function to apply the theme
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+        };
+
+        // Check for saved theme in localStorage, or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    })();
+    </script>
+</body>
+
+</html>

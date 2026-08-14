@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Listing</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .form-card {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 2rem 0;
+            text-align: center;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"], input[type="date"], textarea, select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #e6e9ef;
+            background: #fbfdff;
+            font-size: 1rem;
+            color: #0f172a;
+            box-sizing: border-box;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .amenities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .amenity { display: flex; align-items: center; gap: 0.5rem; }
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            margin-top: 2rem;
+        }
+        .previews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .preview-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e6e9ef;
+        }
+        .preview-item {
+            position: relative;
+        }
+        .delete-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .preview-item label {
+            position: absolute;
+            top: 0; right: 0; left: 0; bottom: 0;
+            cursor: pointer;
+            background-color: rgba(239, 68, 68, 0.5);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .delete-checkbox:checked + label {
+            opacity: 1;
+        }
+        /* New Drag and Drop Uploader Styles */
+        .file-uploader {
+            border: 2px dashed #d1d5db;
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .file-uploader:hover, .file-uploader.dragover {
+            background-color: #eef2ff;
+            border-color: var(--accent);
+        }
+        .file-uploader-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--muted);
+            margin: 0 auto 1rem auto;
+        }
+        .file-uploader p { margin: 0; font-weight: 600; }
+        .file-uploader span { font-size: 0.9rem; color: var(--muted); }
+        .remove-preview-btn {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #ef4444; color: white;
+            border: none; border-radius: 50%;
+            width: 20px; height: 20px;
+            font-size: 12px; font-weight: bold;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <div class="user-menu">
+            <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="form-card">
+            <h1>Edit Your Room Listing</h1>
+            <form id="edit-post-form" action="{% url 'edit_post' post.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Hidden input to store IDs of images to delete -->
+                <input type="hidden" name="delete_images" id="delete_images_input">
+
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" value="{{ post.title }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required>{{ post.description }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="street_address">Street Address</label>
+                    <input type="text" id="street_address" name="street_address" value="{{ post.street_address }}" required>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" value="{{ post.city }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state" name="state" value="{{ post.state }}" required>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="postal_code">Postal Code</label>
+                        <input type="text" id="postal_code" name="postal_code" value="{{ post.postal_code }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact_number">Contact Number</label>
+                        <input type="text" id="contact_number" name="contact_number" value="{{ post.contact_number }}" required>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="room_type">Room Type</label>
+                        <select id="room_type" name="room_type" required>
+                            <option value="private" {% if post.room_type == 'private' %}selected{% endif %}>Private Room</option>
+                            <option value="shared" {% if post.room_type == 'shared' %}selected{% endif %}>Shared Room</option>
+                            <option value="apartment" {% if post.room_type == 'apartment' %}selected{% endif %}>Full Apartment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="area">Area (in sq. ft.)</label>
+                        <input type="number" id="area" name="area" value="{{ post.area }}" required>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="rent">Monthly Rent ₹</label>
+                        <input type="number" id="rent" name="rent" value="{{ post.rent|floatformat:0 }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="available_from">Available From</label>
+                        <input type="date" id="available_from" name="available_from" value="{{ post.available_from|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Amenities</label>
+                    <div class="amenities-grid">
+                        {% for amenity in all_amenities %}
+                            <div class="amenity">
+                                <input type="checkbox" name="amenities" value="{{ amenity }}" {% if amenity in amenities_list %}checked{% endif %}> {{ amenity|capfirst }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Existing Photos</label>
+                    <div class="previews-grid">
+                        {% for image in post.images.all %}
+                            <div class="preview-item" id="existing-image-{{ image.id }}">
+                                <img src="{{ image.image.url }}" class="preview-image" alt="Existing photo">
+                                <button type="button" class="remove-preview-btn" onclick="markForDeletion({{ image.id }})">&times;</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="photos">Upload New Photos (Optional)</label>
+                    <input type="file" id="photos" name="photos" multiple accept="image/*" style="display: none;">
+                    <div id="file-dropzone" class="file-uploader">
+                        <svg class="file-uploader-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V16a4 4 0 01-4 4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 16a4 4 0 004-4V7a4 4 0 00-4-4h-1.586a1 1 0 00-.707.293l-4.414 4.414a1 1 0 00-.293.707V16a4 4 0 004 4h1.586z"></path></svg>
+                        <p>Drag & drop new files here</p>
+                        <span>or click to browse</span>
+                    </div>
+                    <div id="new-previews-container" class="previews-grid"></div>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // --- Logic for Deleting Existing Images ---
+        let imagesToDelete = [];
+        const deleteInput = document.getElementById('delete_images_input');
+
+        function markForDeletion(imageId) {
+            const imageContainer = document.getElementById(`existing-image-${imageId}`);
+            if (imagesToDelete.includes(imageId)) {
+                // If already marked, unmark it (for undo)
+                imagesToDelete = imagesToDelete.filter(id => id !== imageId);
+                imageContainer.style.opacity = '1';
+            } else {
+                // Mark for deletion
+                imagesToDelete.push(imageId);
+                imageContainer.style.opacity = '0.4';
+            }
+            deleteInput.value = imagesToDelete.join(',');
+        }
+
+        // --- Logic for Uploading New Images (same as create_post) ---
+        const dropzone = document.getElementById('file-dropzone');
+        const fileInput = document.getElementById('photos');
+        const previewContainer = document.getElementById('new-previews-container');
+        let fileStore = new DataTransfer();
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            addFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+        function addFiles(files) {
+            for (const file of files) {
+                if (file.type.startsWith('image/')) {
+                    fileStore.items.add(file);
+                }
+            }
+            fileInput.files = fileStore.files;
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            previewContainer.innerHTML = '';
+            previewContainer.style.marginTop = fileStore.files.length > 0 ? '1rem' : '0';
+            Array.from(fileStore.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    const img = document.createElement('img');
+                    img.className = 'preview-image';
+                    img.src = e.target.result;
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-preview-btn';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.type = 'button';
+                    removeBtn.onclick = () => removeFile(index);
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    previewContainer.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeFile(index) {
+            const newFileStore = new DataTransfer();
+            Array.from(fileStore.files)
+                .filter((_, i) => i !== index)
+                .forEach(file => newFileStore.items.add(file));
+            fileStore = newFileStore;
+            fileInput.files = fileStore.files;
+            renderPreviews();
+        }
+    </script>
+</body>
+</html>

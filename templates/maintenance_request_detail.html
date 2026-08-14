@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Maintenance Request Details{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<style>
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 2rem; }
+    .card { background-color: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; }
+    .header { border-bottom: 1px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
+    .header h1 { font-size: 1.8rem; margin: 0 0 0.5rem 0; }
+    .header p { color: var(--muted); margin: 0; }
+    .details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+    .detail-item .label { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+    .detail-item .value { font-size: 1.1rem; font-weight: 500; }
+    .status-badge, .priority-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 600; font-size: 0.8rem; }
+    .status-submitted { background-color: #e0e7ff; color: #4338ca; }
+    .status-in_progress { background-color: #fef3c7; color: #92400e; }
+    .status-completed { background-color: #dcfce7; color: #166534; }
+    .priority-low { background-color: #f0fdf4; color: #16a34a; }
+    .priority-medium { background-color: #fffbeb; color: #d97706; }
+    .priority-high { background-color: #fee2e2; color: #b91c1c; }
+    .section-title { font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem 0; }
+    .description, .request-image { margin-bottom: 2rem; }
+    .request-image img { max-width: 100%; border-radius: 10px; }
+    .comments-section .comment { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    .comment img { width: 40px; height: 40px; border-radius: 50%; }
+    .comment-body { background-color: #f9fafb; padding: 1rem; border-radius: 10px; flex-grow: 1; }
+    .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .comment-header .author { font-weight: 700; }
+    .comment-header .date { font-size: 0.8rem; color: var(--muted); }
+    .comment-form textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e5e7eb; min-height: 80px; box-sizing: border-box; }
+    .btn {
+        display: inline-flex; background: var(--accent); color: #fff; padding: 10px 20px;
+        border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 0.9rem;
+    }
+    .owner-actions { background-color: #f9fafb; padding: 1.5rem; border-radius: 10px; margin-top: 2rem; }
+    .owner-actions form { display: flex; align-items: center; gap: 1rem; }
+    .owner-actions select { padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; }
+</style>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>{{ request.title }}</h1>
+            <p>Request for <strong>{{ request.tenancy.post.title }}</strong> by <strong>{{ request.tenancy.tenant.name }}</strong></p>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="label">Status</span>
+                <span class="value"><span class="status-badge status-{{ request.status|slugify }}">{{ request.get_status_display }}</span></span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Priority</span>
+                <span class="value"><span class="priority-badge priority-{{ request.priority }}">{{ request.get_priority_display }}</span></span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Date Submitted</span>
+                <span class="value">{{ request.created_at|date:"F j, Y" }}</span>
+            </div>
+        </div>
+
+        <div class="description">
+            <h2 class="section-title">Description</h2>
+            <p>{{ request.description }}</p>
+        </div>
+
+        {% if request.image %}
+        <div class="request-image">
+            <h2 class="section-title">Attached Image</h2>
+            <img src="{{ request.image.url }}" alt="Maintenance request image">
+        </div>
+        {% endif %}
+
+        {% if is_owner %}
+        <div class="owner-actions">
+            <h2 class="section-title" style="margin-top: 0;">Update Status</h2>
+            <form method="post">
+                {% csrf_token %}
+                <select name="new_status">
+                    <option value="submitted" {% if request.status == 'submitted' %}selected{% endif %}>Submitted</option>
+                    <option value="in_progress" {% if request.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if request.status == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+                <button type="submit" class="btn">Update</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="comments-section">
+            <h2 class="section-title">Comments</h2>
+            {% for comment in request.comments.all %}
+            <div class="comment">
+                <img src="{{ comment.author.profile_photo.url|default:'/static/default_avatar.png' }}" alt="{{ comment.author.name }}">
+                <div class="comment-body">
+                    <div class="comment-header">
+                        <span class="author">{{ comment.author.name }}</span>
+                        <span class="date">{{ comment.created_at|date:"M d, Y, P" }}</span>
+                    </div>
+                    <p>{{ comment.text }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p>No comments yet.</p>
+            {% endfor %}
+
+            <div class="comment-form">
+                <form method="post" style="width: 100%;">
+                    {% csrf_token %}
+                    <textarea name="comment_text" placeholder="Add a comment..."></textarea>
+                    <button type="submit" class="btn" style="margin-top: 1rem;">Post Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

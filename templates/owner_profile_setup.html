@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+        .sidebar {
+            background-color: var(--card);
+            padding: 1.5rem;
+            border-right: 1px solid #e5e7eb;
+        }
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+        /* Sidebar styles */
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+        .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+        .sidebar-nav .theme-toggle-btn { margin-top: auto; background-color: #f0f3ff; justify-content: center; }
+        .theme-toggle-btn .sun-icon, .theme-toggle-btn .moon-icon { width: 20px; height: 20px; }
+        body.dark-mode .theme-toggle-btn .sun-icon { display: none; }
+        body:not(.dark-mode) .theme-toggle-btn .moon-icon { display: none; }
+        body.dark-mode .sidebar-nav .theme-toggle-btn {
+            background-color: #374151;
+        }
+        .main-content {
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 { font-size: 1.8rem; margin: 0; }
+        .form-card {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #e6e9ef;
+            background: #fbfdff;
+            font-size: 1rem;
+            color: #0f172a;
+            box-sizing: border-box;
+        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .btn {
+            display: inline-flex;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .profile-photo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eef2ff;
+            margin-bottom: 1rem;
+        }
+        .messages { list-style-type: none; padding: 0; margin-bottom: 1.5rem; }
+        .messages li.success { padding: 1rem; border-radius: 10px; color: #0f5132; background-color: #d1e7dd; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+                <span>Roomify</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="{% if not active_page or active_page == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'inbox' %}"><i class="fas fa-inbox"></i> Messages</a>
+                <a href="{% url 'owner_rent_payments' %}" class="{% if active_page == 'rent_payments' %}active{% endif %}"><i class="fas fa-file-invoice-dollar"></i> Rent Payments</a>
+                <a href="{% url 'owner_maintenance_list' %}" class="{% if active_page == 'maintenance' %}active{% endif %}"><i class="fas fa-tools"></i> Maintenance</a>
+                <a href="{% url 'tenant_list' %}" class="{% if active_page == 'my_tenants' %}active{% endif %}"><i class="fas fa-users"></i> My Tenants</a>
+                <a href="{% url 'owner_booking_requests' %}"><i class="fas fa-bell"></i> Booking Requests</a>
+                <a href="{% url 'owner_profile_setup' %}" class="{% if active_page == 'profile' %}active{% endif %}"><i class="fas fa-user-cog"></i> My Profile</a>
+                <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="#" class="theme-toggle-btn" title="Toggle Theme">
+                    <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <h1>My Profile</h1>
+            </div>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="form-card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Profile Photo</label>
+                        {% if user.profile_photo %}
+                            <img src="{{ user.profile_photo.url }}" alt="Profile Photo" class="profile-photo-preview">
+                        {% else %}
+                            <img src="https://via.placeholder.com/100" alt="No Profile Photo" class="profile-photo-preview">
+                        {% endif %}
+                        <input type="file" name="profile_photo" accept="image/*">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="full_name">Full Name</label>
+                            <input type="text" id="full_name" name="full_name" value="{{ user.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" value="{{ user.email }}" disabled>
+                            <small style="color: var(--muted); font-size: 0.8rem;">Email cannot be changed.</small>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender">
+                                <option value="">Select...</option>
+                                <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                                <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" id="dob" name="dob" value="{{ user.dob|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number</label>
+                        <input type="tel" id="phone_number" name="phone_number" value="{{ user.phone_number|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Full Address</label>
+                        <input type="text" id="address" name="address" value="{{ user.address|default:'' }}">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="{{ user.city|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" value="{{ user.state|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="landmark">Landmark</label>
+                        <input type="text" id="landmark" name="landmark" value="{{ user.landmark|default:'' }}">
+                    </div>
+                    <button type="submit" class="btn">Save Profile</button>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

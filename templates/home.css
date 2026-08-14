@@ -1,0 +1,237 @@
+:root {
+    --bg: #f6fbff;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --muted: #6b7280;
+    --radius: 12px;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(180deg, #eef2ff 0%, var(--bg) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px
+}
+
+.wrap {
+    width: 100%;
+    max-width: 1300px;
+    display: grid;
+    grid-template-columns: 1fr 420px 420px;
+    gap: 28px;
+    align-items: center
+}
+
+/* Adjusted grid for two cards */
+.info {
+    background: transparent;
+    border-radius: var(--radius);
+    padding: 34px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(15, 23, 42, 0.04)
+}
+
+h1 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #0f172a
+}
+
+p.lead {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px
+}
+
+/* CSS-only tabs using radios */
+.toggle {
+    display: none
+}
+
+.tab-label {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+/* Specific IDs for each card's tabs */
+#owner-tab-login:checked+label[for="owner-tab-login"],
+#owner-tab-register:checked+label[for="owner-tab-register"],
+#student-tab-login:checked+label[for="student-tab-login"],
+#student-tab-register:checked+label[for="student-tab-register"] {
+    background: linear-gradient(90deg, #eef2ff, #f3f0ff);
+    color: var(--accent);
+    border-color: rgba(37, 99, 235, 0.12)
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+label.field {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 6px
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select {
+    /* Added number, date, select */
+
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #e6e9ef;
+    background: #fbfdff;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.row {
+    display: flex;
+    gap: 10px
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Message styling from dashboard.html */
+.messages {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 1rem;
+    /* Adjusted for tighter spacing in cards */
+}
+
+.messages li {
+    padding: 10px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.messages li.success {
+    background-color: #28a745;
+}
+
+.messages li.error {
+    background-color: #dc3545;
+}
+
+.btn.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid rgba(193, 240, 220, 0.194);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn.ghost:hover {
+    background: #16a34a; /* A nice green for the hover effect */
+    color: #fff;
+}
+
+.small {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 13px
+}
+
+.panels {
+    position: relative
+}
+
+.panel {
+    display: none
+}
+
+/* Specific IDs for each card's panels */
+#owner-tab-login:checked~.panels #owner-panel-login,
+#owner-tab-register:checked~.panels #owner-panel-register,
+#student-tab-login:checked~.panels #student-panel-login,
+#student-tab-register:checked~.panels #student-panel-register {
+    display: block
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+}
+
+a {
+    text-decoration: none;
+    color: var(--accent)
+}
+
+@media (max-width:1300px) {
+    .wrap {
+        grid-template-columns: 1fr 1fr;
+        max-width: 900px;
+    }
+
+    .info {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+}
+
+/* Stack info on top, 2 columns for cards */
+@media (max-width:900px) {
+    .wrap {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        max-width: 450px;
+    }
+}
+
+/* Stack all on small screens */

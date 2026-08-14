@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Rent Payments{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+{% block content %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+        font-family: Inter, system-ui, sans-serif;
+    }
+    body.dark-mode .tenancy-card, body.dark-mode .no-tenancies { background-color: #1f2937; border-color: #374151; }
+    body.dark-mode .tenancy-header { background-color: #374151; border-color: #4b5563; }
+    body.dark-mode .payment-table th, body.dark-mode .payment-table td { border-color: #4b5563; }
+    body.dark-mode .payment-table th { color: #9ca3af; }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .tenancy-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    .tenancy-header {
+        background-color: #f9fafb;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .tenancy-header h2 {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+    .tenancy-header .tenant-info {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    .tenancy-summary {
+        padding: 1rem 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    .summary-item .label { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.25rem; }
+    .summary-item .value { font-size: 1.5rem; font-weight: 700; }
+    .progress-bar-container {
+        width: 100%;
+        background-color: #e5e7eb;
+        border-radius: 8px;
+        height: 12px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    .progress-bar {
+        height: 100%;
+        background-color: #22c55e;
+        border-radius: 8px;
+        transition: width 0.5s ease-in-out;
+        text-align: center;
+        color: white;
+    }
+    .payment-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .payment-table th, .payment-table td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .payment-table tr:last-child td {
+        border-bottom: none;
+    }
+    .payment-table th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #6b7280;
+        font-weight: 600;
+    }
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    .status-paid {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    .status-unpaid {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    .action-btn {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .action-btn:hover {
+        background-color: #1d4ed8;
+    }
+    .no-tenancies {
+        text-align: center;
+        padding: 3rem;
+        background-color: #fff;
+        border-radius: 12px;
+    }
+</style>
+
+<div class="container">
+    <div class="header">
+        <h1>Rent Payment Tracking</h1>
+    </div>
+    
+    <div class="shortcut-buttons" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <a href="{% url 'dashboard' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-home"></i> My Listings</a>
+        <a href="{% url 'tenant_list' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-users"></i> My Tenants</a>
+        <a href="{% url 'owner_booking_requests' %}" class="action-btn" style="background-color: #6b7280;"><i class="fas fa-bell"></i> Booking Requests</a>
+    </div>
+
+    <style>
+        .shortcut-buttons .action-btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+    </style>
+
+    {% if messages %}
+        <ul class="messages" style="list-style-type: none; padding: 0; margin-bottom: 1.5rem;">
+            {% for message in messages %}
+                <li class="{{ message.tags }}" style="padding: 1rem; border-radius: 10px; color: #0f5132; background-color: #d1e7dd;">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% for tenancy in tenancies %}
+        <div class="tenancy-card" data-tenancy-id="{{ tenancy.id }}" data-total-due="{{ tenancy.total_due|floatformat:2 }}">
+            <div class="tenancy-header">
+                <h2>{{ tenancy.post.title }}</h2>
+                <div class="tenant-info">
+                    <i class="fas fa-user"></i> Tenant: <strong>{{ tenancy.tenant.name }}</strong> | <i class="fas fa-calendar-alt"></i> Since: {{ tenancy.start_date|date:"F d, Y" }}
+                </div>
+            </div>
+            <div class="tenancy-summary">
+                <div class="summary-item">
+                    <div class="label">Total Paid</div>
+                    <div class="value total-paid-value" style="color: #22c55e;">₹{{ tenancy.total_paid|floatformat:2 }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">Payment Progress (Next 12 Months)</div>
+                    <div class="progress-bar-container"><div class="progress-bar" style="width: {% widthratio tenancy.total_paid tenancy.total_due 100 %}%"></div></div>
+                </div>
+            </div>
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Due Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Paid On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in tenancy.payments.all %}
+                    <tr data-payment-id="{{ payment.id }}">
+                        <td><i class="far fa-calendar-alt" style="color: #6b7280; margin-right: 8px;"></i>{{ payment.due_date|date:"F Y" }}</td>
+                        <td>₹{{ payment.amount|floatformat:2 }}</td>
+                        <td>
+                            <span class="status-badge {% if payment.status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ payment.paid_on|date:"M d, Y"|default:"--" }}</td>
+                        <td>
+                            {% if payment.status == 'unpaid' %}
+                            <form action="{% url 'mark_payment_paid' payment.id %}" method="post" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn"><i class="fas fa-check-circle"></i> Mark as Paid</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% empty %}
+        <div class="no-tenancies">
+            <h2>No active tenancies found.</h2>
+            <p>When you accept a booking or assign a tenant, their rent payment schedule will appear here.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // --- Real-time updates for rent payments ---
+    function connectWebSocket() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
+
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            if (data.type === 'payment_received') {
+                const payload = data.payload;
+                const paymentRow = document.querySelector(`tr[data-payment-id="${payload.payment_id}"]`);
+
+                if (paymentRow) {
+                    const statusBadge = paymentRow.querySelector('.status-badge');
+                    const paidOnCell = paymentRow.cells[3]; // The 'Paid On' cell
+                    const actionCell = paymentRow.cells[4]; // The 'Action' cell
+
+                    // Update status badge
+                    statusBadge.classList.remove('status-unpaid');
+                    statusBadge.classList.add('status-paid');
+                    statusBadge.textContent = 'Paid';
+
+                    // Update "Paid On" date
+                    const today = new Date();
+                    const month = today.toLocaleString('default', { month: 'short' });
+                    const day = today.getDate();
+                    const year = today.getFullYear();
+                    paidOnCell.innerHTML = `<i class="fas fa-check" style="color: #22c55e; margin-right: 8px;"></i>${month} ${day}, ${year}`;
+
+                    // Remove the "Mark as Paid" button
+                    if (actionCell) {
+                        actionCell.innerHTML = '';
+                    }
+
+                    // Highlight the row
+                    paymentRow.style.backgroundColor = '#dcfce7';
+                    setTimeout(() => { paymentRow.style.backgroundColor = ''; }, 3000);
+
+                    // --- Update Tenancy Summary (Total Paid and Progress Bar) ---
+                    const tenancyCard = document.querySelector(`.tenancy-card[data-tenancy-id="${payload.tenancy_id}"]`);
+                    if (tenancyCard) {
+                        const totalPaidElement = tenancyCard.querySelector('.total-paid-value');
+                        const progressBar = tenancyCard.querySelector('.progress-bar');
+
+                        if (totalPaidElement && progressBar) {
+                            // Safely parse the current total paid amount
+                            let currentTotalPaid = parseFloat(totalPaidElement.textContent.replace(/[₹,]/g, ''));
+                            let newTotalPaid = currentTotalPaid + parseFloat(payload.amount);
+                            totalPaidElement.textContent = `₹${newTotalPaid.toFixed(2)}`;
+
+                            // Recalculate and update the progress bar
+                            const totalDue = parseFloat(tenancyCard.dataset.totalDue);
+                            if (totalDue > 0) {
+                                const percentage = (newTotalPaid / totalDue) * 100;
+                                progressBar.style.width = `${Math.min(percentage, 100)}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        notificationSocket.onclose = function(e) {
+            console.error('Payment socket closed. Reconnecting in 5 seconds...');
+            setTimeout(connectWebSocket, 5000);
+        };
+    }
+    connectWebSocket();
+</script>
+{% endblock %}

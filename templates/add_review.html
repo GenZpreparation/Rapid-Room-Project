@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review for {{ post.title }}</title>
+    <style>
+        :root {
+            --bg: #f6fbff;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --muted: #6b7280;
+            --text-primary: #1f2937;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        body {
+            font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .navbar {
+            background-color: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+
+        .navbar .user-menu a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .form-card {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 0.5rem 0;
+        }
+
+        p.lead {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #e6e9ef;
+            background: #fbfdff;
+            font-size: 1rem;
+            color: #0f172a;
+            box-sizing: border-box;
+            min-height: 120px;
+        }
+
+        .btn {
+            display: inline-flex;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 2rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .star-rating input:checked~label,
+        .star-rating label:hover,
+        .star-rating label:hover~label {
+            color: #f59e0b;
+            /* Amber color for stars */
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M21.63 9.25L12.88 2.3C12.34 1.88 11.66 1.88 11.12 2.3L2.37 9.25C1.89 9.62 1.59 10.21 1.59 10.84V20C1.59 21.1 2.49 22 3.59 22H10.5C10.21 21.39 10 20.72 10 20C10 17.24 12.24 15 15 15C17.76 15 20 17.24 20 20C20 20.72 19.79 21.39 19.5 22H20.41C21.51 22 22.41 21.1 22.41 20V10.84C22.41 10.21 22.11 9.62 21.63 9.25ZM15 17C13.9 17 13 17.9 13 19C13 19.74 13.35 20.39 13.87 20.78C14.13 21.54 14.81 22.08 15.62 21.98C16.63 21.86 17.33 20.91 17.17 19.91C17.05 19.15 16.5 18.5 15.75 18.13C15.5 17.5 15 17 15 17Z"/></svg>
+            <span>Roomify</span>
+        </div>
+        <div class="user-menu">
+            <a href="{% url 'post_detail' post.id %}">Back to Listing</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="form-card">
+            <h1>Write a Review</h1>
+            <p class="lead">Share your experience with the community for the listing: <strong>{{ post.title }}</strong>
+            </p>
+
+            <form method="post" action="{% url 'add_review' post.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Your Rating</label>
+                    <div class="star-rating">
+                        <input type="radio" id="star5" name="rating" value="5" required><label for="star5"
+                            title="5 stars">★</label>
+                        <input type="radio" id="star4" name="rating" value="4"><label for="star4"
+                            title="4 stars">★</label>
+                        <input type="radio" id="star3" name="rating" value="3"><label for="star3"
+                            title="3 stars">★</label>
+                        <input type="radio" id="star2" name="rating" value="2"><label for="star2"
+                            title="2 stars">★</label>
+                        <input type="radio" id="star1" name="rating" value="1"><label for="star1"
+                            title="1 star">★</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="comment">Your Comment</label>
+                    <textarea id="comment" name="comment"
+                        placeholder="Describe your experience, the accuracy of the listing, and your interaction with the owner."
+                        required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Review</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
+```
+
+### 5. Update `post_detail.html` to Display Reviews
+
+Finally, I'll modify the room detail page to show the average rating and the list of submitted reviews.
+
+```diff
+--- a/d:\python Qspider\DJANGO\django3\SomeNew\templates\post_detail.html
+++++ b/d:\python Qspider\DJANGO\django3\SomeNew\templates\post_detail.html
+@@ -259,6 +259,23 @@
+.btn.delete:hover { background-color: #dc2626; }
+.amenities-list li svg { width: 18px; height: 18px; color: var(--accent); }
+
++ .reviews-section { margin-top: 2rem; }
++ .review-card {
++ background-color: #f9fafb;
++ border: 1px solid #e5e7eb;
++ border-radius: 10px;
++ padding: 1.5rem;
++ margin-bottom: 1rem;
++ }
++ .review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
++ .review-header .author { font-weight: 700; }
++ .review-header .date { font-size: 0.85rem; color: var(--muted); }
++ .review-stars { color: #f59e0b; }
++ .avg-rating { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
++ .avg-rating .stars { font-size: 1.2rem; color: #f59e0b; }
++ .avg-rating .count { font-weight: 600; color: var(--muted); }
++
+@media (max-width: 900px) {
+.detail-grid { grid-template-columns: 1fr; }
+.info-card { margin-top: 2rem; }
+
+
+<div class="info-card">
+    <h1>{{ post.title }}</h1>
+    + <div class="avg-rating">
+        + <span class="stars">
+            + {% for i in "12345" %}
+            + {% if post.average_rating >= i|add:0 %}{% if post.average_rating < i|add:"0.5" %}★{% else %}★{% endif %}{%
+                else %}☆{% endif %} + {% endfor %} + </span>
+                + <span class="count">({{ post.reviews.count }} review{{ post.reviews.count|pluralize }})</span>
+                + </div>
+    {% if post.is_available %}
+    <div class="status-badge available">Available</div>
+    {% else %}
+    @@ -359,6 +384,12 @@
+</div>
+{% endif %}
+
++ {% if can_review %}
++ <div style="margin: 1.5rem 0;">
+    + <a href="{% url 'add_review' post.id %}" class="btn" style="width: 100%; text-align: center;">Write a Review</a>
+    + </div>
++ {% endif %}
++
+
+<h2 class="section-title">Description</h2>
+<p class="description">{{ post.description }}</p>
+@@ -370,6 +401,24 @@
+{% endfor %}
+</ul>
+
++ <div class="reviews-section">
+    + <h2 class="section-title">Reviews</h2>
+    + {% for review in post.reviews.all %}
+    + <div class="review-card">
+        + <div class="review-header">
+            + <span class="author">{{ review.student.name }}</span>
+            + <span class="review-stars">
+                + {% for i in "12345" %}{% if review.rating >= i|add:0 %}★{% else %}☆{% endif %}{% endfor %}
+                + </span>
+            + <span class="date">{{ review.created_at|date:"F Y" }}</span>
+            + </div>
+        + <p>{{ review.comment }}</p>
+        + </div>
+    + {% empty %}
+    + <p>No reviews yet. Be the first to leave one!</p>
+    + {% endfor %}
+    + </div>
++
+{% if is_owner %}
+<div class="owner-actions">
+    <div class="action-buttons" style="margin-top: 1rem;">

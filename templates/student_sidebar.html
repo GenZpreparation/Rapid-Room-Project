@@ -1,0 +1,41 @@
+<style>
+    /* Sidebar styles */
+    .sidebar-nav a {
+        display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px;
+        text-decoration: none; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-nav a:hover { background-color: #f0f3ff; color: var(--accent); }
+    .sidebar-nav a.active { background-color: #eef2ff; color: var(--accent); }
+
+    /* Theme toggle button styles */
+    .sidebar-nav .theme-toggle-btn {
+        margin-top: auto; /* Pushes the button to the bottom */
+        background-color: #f0f3ff;
+        justify-content: center;
+    }
+    .theme-toggle-btn .sun-icon,
+    .theme-toggle-btn .moon-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Dark mode theme button style */
+    body.dark-mode .sidebar-nav .theme-toggle-btn {
+        background-color: #374151;
+    }
+</style>
+<nav class="sidebar-nav">
+    <a href="{% url 'dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}"><i class="fas fa-search"></i> Dashboard</a>
+    <a href="{% url 'inbox' %}"><i class="fas fa-inbox"></i> Messages</a>
+    <a href="{% url 'student_bookings' %}" class="{% if active_page == 'bookings' %}active{% endif %}"><i class="fas fa-calendar-check"></i> My Bookings</a>
+    <a href="{% url 'student_tenancies' %}" class="{% if active_page == 'tenancies' %}active{% endif %}"><i class="fas fa-house-user"></i> My Tenancies</a>
+    <a href="{% url 'student_rent_payments' %}" class="{% if active_page == 'rent_payments' %}active{% endif %}"><i class="fas fa-dollar-sign"></i> My Rent Payments</a>
+    <a href="{% url 'saved_posts_list' %}" class="{% if active_page == 'saved_rooms' %}active{% endif %}"><i class="fas fa-heart"></i> My Saved Rooms</a>
+    <a href="{% url 'student_profile_setup' %}" class="{% if active_page == 'profile' %}active{% endif %}"><i class="fas fa-user-cog"></i> My Profile</a>
+    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <a href="#" class="theme-toggle-btn" title="Toggle Theme">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+    </a>
+</nav>
