@@ -25,6 +25,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Vercel build aur runtime dono me VERCEL=1 milta hai (system env var).
 ON_VERCEL = bool(os.getenv("VERCEL"))
 
+# Debug helper: Vercel ke build log me ye line dikhti hai aur batati hai ki kaunsi
+# environment variables build tak pahunchi hain. (Values KABHI print nahi hoti — sirf yes/NO.)
+if ON_VERCEL:
+    _checked_env_keys = (
+        "SECRET_KEY",
+        "DEBUG",
+        "DB_NAME",
+        "DB_USER",
+        "DB_PASSWORD",
+        "DB_HOST",
+        "DB_PORT",
+        "DB_SSLMODE",
+    )
+    print(
+        "[SomeNew.settings] VERCEL_ENV=%s | %s"
+        % (
+            os.getenv("VERCEL_ENV", "unknown"),
+            ", ".join("%s=%s" % (key, "yes" if os.getenv(key) else "NO") for key in _checked_env_keys),
+        )
+    )
+
+
 
 # ---------------------------------------------------------------------------
 # Security
