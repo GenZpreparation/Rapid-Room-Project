@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 import secrets
+import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -25,8 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Vercel build aur runtime dono me VERCEL=1 milta hai (system env var).
 ON_VERCEL = bool(os.getenv("VERCEL"))
 
-# Debug helper: Vercel ke build log me ye line dikhti hai aur batati hai ki kaunsi
-# environment variables build tak pahunchi hain. (Values KABHI print nahi hoti — sirf yes/NO.)
+# Debug helper: ye line Vercel ke BUILD LOG me dikhti hai aur batati hai ki kaunsi
+# environment variables build tak pahunchi hain (values KABHI print nahi hoti - sirf yes/NO).
+#
+# IMPORTANT: ise `stderr` par likhna hai, `stdout` par nahi!
+# Vercel ke build ka settings-discovery step hamare settings module ko import karke
+# stdout se JSON parse karta hai; stdout par kuch bhi extra likhne se wo JSON toot jaata hai
+# (error: `Unexpected token ... is not valid JSON`).
 if ON_VERCEL:
     _checked_env_keys = (
         "SECRET_KEY",
@@ -38,8 +44,8 @@ if ON_VERCEL:
         "DB_PORT",
         "DB_SSLMODE",
     )
-    print(
-        "[SomeNew.settings] VERCEL_ENV=%s | %s"
+    sys.stderr.write(
+        "[SomeNew.settings] VERCEL_ENV=%s | %s\n"
         % (
             os.getenv("VERCEL_ENV", "unknown"),
             ", ".join("%s=%s" % (key, "yes" if os.getenv(key) else "NO") for key in _checked_env_keys),
