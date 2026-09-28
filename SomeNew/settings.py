@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path,os
 import os
+import secrets
+from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,22 +22,58 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Vercel build aur runtime dono me VERCEL=1 milta hai (system env var).
+ON_VERCEL = bool(os.getenv("VERCEL"))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6ysyp=in+d6i+-1)3i5vdey0f$@gq51vh3md9#cnym7ej9(1gh'
+# ---------------------------------------------------------------------------
+# Security
+# ---------------------------------------------------------------------------
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECRET_KEY: local `.env` se ya Vercel ke Environment Variables se aata hai.
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    if ON_VERCEL:
+        raise ImproperlyConfigured(
+            "SECRET_KEY environment variable set nahi hai. Vercel -> Project -> "
+            "Settings -> Environment Variables me SECRET_KEY add karo."
+        )
+    # Local development ke liye temporary key (server restart pe sessions reset honge).
+    SECRET_KEY = "django-insecure-local-dev-only-" + secrets.token_urlsafe(40)
 
-ALLOWED_HOSTS = []
+# DEBUG: Vercel pe default False, local pe default True.
+DEBUG = os.getenv("DEBUG", "False" if ON_VERCEL else "True").strip().lower() == "true"
+
+# ALLOWED_HOSTS: localhost + Vercel deployments + custom domains.
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", ".vercel.app"]
+ALLOWED_HOSTS += [h.strip() for h in os.getenv("EXTRA_ALLOWED_HOSTS", "").split(",") if h.strip()]
+for _host_env_var in ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    _host = os.getenv(_host_env_var)
+    if _host and _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+
+# CSRF: HTTPS origins (Vercel TLS terminate karta hai).
+CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app"]
+CSRF_TRUSTED_ORIGINS += [
+    f"https://{host}"
+    for host in ALLOWED_HOSTS
+    if host not in ("localhost", "127.0.0.1", "[::1]") and not host.startswith(".")
+]
+CSRF_TRUSTED_ORIGINS += [o.strip() for o in os.getenv("EXTRA_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+
+# Vercel proxy ke peeche request.is_secure() sahi kaam kare.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'daphne' ASGI dev-server (`runserver`) deta hai, isliye local pe
+    # WebSocket (chat + notifications) test kiye ja sakte hain.
+    # Vercel pe ye khud ASGI app chalata hai, wahan iski zarurat nahi.
+    'daphne',
     'channels',
 
     'django.contrib.admin',
@@ -61,7 +100,7 @@ ROOT_URLCONF = 'SomeNew.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,11 +115,27 @@ TEMPLATES = [
 WSGI_APPLICATION = 'SomeNew.wsgi.application'
 ASGI_APPLICATION = 'SomeNew.asgi.application'
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+# ---------------------------------------------------------------------------
+# Channel layers (WebSockets: chat + live notifications)
+# ---------------------------------------------------------------------------
+# InMemoryChannelLayer sirf ek hi process ke andar kaam karta hai. Vercel pe
+# multiple function instances hote hain, isliye production me REDIS_URL set karo
+# (Upstash Redis from Vercel Marketplace). Uske liye requirements.txt me se
+# `channels-redis` install karna hoga.
+REDIS_URL = os.getenv("REDIS_URL")
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [REDIS_URL]},
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 
 # Database
@@ -93,7 +148,19 @@ DATABASES = {
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "PORT": os.getenv("DB_PORT", "5432"),
+        # Serverless: har invocation pe fresh connection (stale connection errors se bachne ke liye).
+        "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "0")),
+        "OPTIONS": {
+            # Cloud Postgres (Neon/Supabase) SSL maangta hai; local Postgres "prefer" se chal jata hai.
+            "sslmode": os.getenv("DB_SSLMODE", "require" if ON_VERCEL else "prefer"),
+            "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10")),
+        },
+        # Neon/Supabase ke pooled endpoint (PgBouncer, transaction mode) ke saath
+        # server-side cursors band rakhne padte hain.
+        "DISABLE_SERVER_SIDE_CURSORS": os.getenv(
+            "DB_DISABLE_SERVER_SIDE_CURSORS", "True" if ON_VERCEL else "False"
+        ).strip().lower() == "true",
     }
 }
 
@@ -131,20 +198,56 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+#
+# Vercel ke build ke waqt STATIC_ROOT `public/<STATIC_URL>/` pe override hota hai
+# aur wahan se files Vercel CDN serve karta hai. Isliye STATIC_ROOT set hona
+# zaroori hai, warna Vercel collectstatic skip kar deta hai.
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+
+# Media files (user-uploaded content)
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Vercel ka filesystem read-only hai, isliye naye uploads (profile photo, post
+# images, maintenance photos) disk pe save nahi ho sakte. Neeche diye gaye env
+# vars set karte hi S3-compatible cloud storage on ho jata hai
+# (AWS S3 / Supabase Storage / Cloudflare R2). Iske liye requirements.txt me se
+# `django-storages[s3]` install karna hoga.
+USING_CLOUD_MEDIA = bool(os.getenv("AWS_STORAGE_BUCKET_NAME"))
+if USING_CLOUD_MEDIA:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": os.getenv("AWS_STORAGE_BUCKET_NAME"),
+                "access_key": os.getenv("AWS_ACCESS_KEY_ID"),
+                "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+                "endpoint_url": os.getenv("AWS_S3_ENDPOINT_URL") or None,
+                "region_name": os.getenv("AWS_S3_REGION_NAME") or None,
+                "custom_domain": os.getenv("AWS_S3_CUSTOM_DOMAIN") or None,
+                "file_overwrite": False,
+                "querystring_auth": False,
+            },
+        },
+        # Static files Vercel CDN se serve hote hain -> staticfiles ke liye
+        # default (FileSystem) backend hi rakha gaya hai.
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+# NOTE: Vercel Functions ka request/response body limit 4.5 MB hai. Isse badi
+# image upload karne pe Vercel 413 (FUNCTION_PAYLOAD_TOO_LARGE) return karega.
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Media files (user-uploaded content)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 

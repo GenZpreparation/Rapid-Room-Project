@@ -1,6 +1,8 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+
 from asgiref.sync import sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 from .models import Conversation, Message, user
 
 
@@ -33,6 +35,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # Send the message data to the WebSocket.
         await self.send(text_data=json.dumps(event["message"]))
 
+
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
@@ -61,13 +64,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     # This method is called by the view when a new message is saved
-    async def new_message(self, event): # Renamed to match the 'type' sent from the view
+    async def new_message(self, event):  # Renamed to match the 'type' sent from the view
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             # We reconstruct the payload here to ensure consistency
             # and only send what the client needs.
-            'text': event['text'],       # Access directly from event
-            'sender_id': event['sender_id'], # Access directly from event
+            'text': event['text'],            # Access directly from event
+            'sender_id': event['sender_id'],  # Access directly from event
         }))
 
     # This method is for receiving messages from the WebSocket (e.g., typing indicators)

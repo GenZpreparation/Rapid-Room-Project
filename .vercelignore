@@ -1,0 +1,10 @@
+# Vercel CLI se deploy karte waqt ye files upload nahi hongi.
+# (Git se deploy kar rahe ho to sirf committed files jaati hain anyway.)
+env/
+.venv/
+venv/
+__pycache__/
+*.pyc
+staticfiles/
+.vscode/
+.idea/
